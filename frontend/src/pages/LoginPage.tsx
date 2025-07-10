@@ -1,105 +1,108 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
+import { useAuth } from '../context/AuthContext';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
+import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { useAuth } from '@/context/AuthContext';
-import { ArrowLeft, LogIn } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { useToast } from '@/components/ui/use-toast';
 
-const LoginPage = () => {
-  const [username, setUsername] = useState('');
+const LoginPage: React.FC = () => {
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
   const { login } = useAuth();
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
-    setError('');
+    try {
+      const response = await fetch("https://5000-i8hanuzua8ev6xon6otiw-9f2543e8.manusvm.computer/api/auth/login", {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
 
-    const result = await login(username, password);
-    
-    if (result.success) {
-      navigate('/loja');
-    } else {
-      setError(result.error || 'Erro ao fazer login');
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.msg || 'Erro ao fazer login');
+      }
+
+      const data = await response.json();
+      login(data.access_token);
+      toast({
+        title: 'Login bem-sucedido!',
+        description: 'Você foi logado com sucesso.',
+      });
+      navigate('/dashboard');
+    } catch (error: any) {
+      toast({
+        title: 'Erro de Login',
+        description: error.message || 'Ocorreu um erro. Por favor, tente novamente.',
+        variant: 'destructive',
+      });
     }
-    
-    setLoading(false);
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        <div className="mb-6">
-          <Link to="/loja">
-            <Button variant="outline" className="gap-2 bg-white/10 border-white/20 text-white hover:bg-white/20">
-              <ArrowLeft size={16} />
-              Voltar à Loja
-            </Button>
-          </Link>
-        </div>
-
-        <Card className="bg-white/10 border-white/20 backdrop-blur-sm">
-          <CardHeader className="text-center">
-            <CardTitle className="text-2xl text-white">Login</CardTitle>
-            <CardDescription className="text-gray-300">
-              Entre na sua conta para acessar o carrinho e pedidos
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              {error && (
-                <div className="p-3 bg-red-500/20 border border-red-500/30 rounded-md text-red-200 text-sm">
-                  {error}
-                </div>
-              )}
-              
-              <div>
-                <Input
-                  type="text"
-                  placeholder="Nome de usuário"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  required
-                  className="bg-white/10 border-white/20 text-white placeholder:text-gray-400"
-                />
-              </div>
-              
-              <div>
-                <Input
-                  type="password"
-                  placeholder="Senha"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  className="bg-white/10 border-white/20 text-white placeholder:text-gray-400"
-                />
-              </div>
-              
-              <Button 
-                type="submit" 
-                className="w-full gap-2 bg-purple-600 hover:bg-purple-700"
-                disabled={loading}
-              >
-                <LogIn size={16} />
-                {loading ? 'Entrando...' : 'Entrar'}
-              </Button>
-            </form>
-            
-            <div className="mt-6 text-center">
-              <p className="text-gray-300 text-sm">
-                Não tem uma conta?{' '}
-                <Link to="/register" className="text-purple-400 hover:text-purple-300">
-                  Registre-se aqui
-                </Link>
-              </p>
+      <div className="absolute inset-0 bg-black/20"></div>
+      <Card className="w-full max-w-md relative z-10 bg-gray-900/90 border-purple-500/30 backdrop-blur-sm">
+        <CardHeader className="space-y-1 text-center">
+          <div className="flex items-center justify-center mb-4">
+            <div className="w-12 h-12 bg-green-500 rounded-lg flex items-center justify-center">
+              <span className="text-2xl font-bold text-black">G</span>
             </div>
-          </CardContent>
-        </Card>
-      </div>
+          </div>
+          <CardTitle className="text-2xl font-bold text-white">Login</CardTitle>
+          <CardDescription className="text-gray-300">
+            Entre com seu email e senha para acessar sua conta.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="email" className="text-green-400 font-medium">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="m@example.com"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="bg-gray-800/50 border-purple-500/30 text-white placeholder:text-gray-400 focus:border-green-400 focus:ring-green-400"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="password" className="text-green-400 font-medium">Senha</Label>
+              <Input
+                id="password"
+                type="password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="bg-gray-800/50 border-purple-500/30 text-white placeholder:text-gray-400 focus:border-green-400 focus:ring-green-400"
+              />
+            </div>
+            <Button 
+              type="submit" 
+              className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-medium py-2 px-4 rounded-md transition-all duration-200"
+            >
+              Entrar
+            </Button>
+          </form>
+        </CardContent>
+        <CardFooter className="flex justify-center">
+          <p className="text-sm text-gray-400">
+            Não tem uma conta?{' '}
+            <Link to="/register" className="font-medium text-green-400 hover:text-green-300 hover:underline transition-colors">
+              Registre-se
+            </Link>
+          </p>
+        </CardFooter>
+      </Card>
     </div>
   );
 };
