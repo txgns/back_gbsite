@@ -1,5 +1,6 @@
 {
   "rewrites": [
+    { "source": "/api/(.*)", "destination": "/backend/api/$1" },
     { "source": "/(.*)", "destination": "/frontend/$1" }
   ],
   "builds": [
@@ -7,6 +8,11 @@
       "src": "frontend/package.json",
       "use": "@vercel/static-build",
       "config": { "distDir": "dist" }
+    },
+    {
+      "src": "backend/api/index.py",
+      "use": "@vercel/python",
+      "config": { "maxLambdaSize": "15mb" }
     }
   ]
 }
