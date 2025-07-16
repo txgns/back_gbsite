@@ -1,33 +1,30 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/use-toast';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Package, ShoppingCart, Users, DollarSign, TrendingUp, AlertTriangle } from 'lucide-react';
 
-interface User {
-  id: number;
-  username: string;
-  email: string;
-  role: string;
+interface AdminStats {
+  total_users: number;
+  total_orders: number;
+  pending_orders: number;
+  total_revenue: number;
 }
 
-interface Order {
-  id: number;
-  user_id: number;
-  username: string;
-  total_price: number;
-  status: string;
-  created_at: string;
+interface OrderStats {
+  status_counts: Record<string, number>;
+  total_revenue: number;
+  pending_revenue: number;
 }
 
 const AdminDashboardPage: React.FC = () => {
-  const { user, isAuthenticated, isAdmin, logout } = useAuth();
+  const { user, isAuthenticated, isAdmin, logout, token } = useAuth();
   const navigate = useNavigate();
-  const [users, setUsers] = useState<User[]>([]);
-  const [orders, setOrders] = useState<Order[]>([]);
+  const [adminStats, setAdminStats] = useState<AdminStats | null>(null);
+  const [orderStats, setOrderStats] = useState<OrderStats | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!isAuthenticated || !isAdmin) {
@@ -41,96 +38,42 @@ const AdminDashboardPage: React.FC = () => {
   }, [isAuthenticated, isAdmin, navigate]);
 
   useEffect(() => {
-    const fetchData = async () => {
-      if (isAdmin) {
+    const fetchStats = async () => {
+      if (isAdmin && token) {
         try {
-          const usersResponse = await fetch('http://localhost:5000/api/admin/users', {
+          // Fetch admin stats
+          const adminResponse = await fetch('/api/admin/stats', {
             headers: {
-              Authorization: `Bearer ${localStorage.getItem('token')}`,
+              Authorization: `Bearer ${token}`,
             },
           });
-          const usersData = await usersResponse.json();
-          setUsers(usersData);
+          
+          if (adminResponse.ok) {
+            const adminData = await adminResponse.json();
+            setAdminStats(adminData);
+          }
 
-          const ordersResponse = await fetch('http://localhost:5000/api/admin/orders', {
+          // Fetch order stats
+          const orderResponse = await fetch('/api/orders/stats', {
             headers: {
-              Authorization: `Bearer ${localStorage.getItem('token')}`,
+              Authorization: `Bearer ${token}`,
             },
           });
-          const ordersData = await ordersResponse.json();
-          setOrders(ordersData);
+          
+          if (orderResponse.ok) {
+            const orderData = await orderResponse.json();
+            setOrderStats(orderData);
+          }
 
         } catch (error: any) {
-          toast({
-            title: 'Erro ao carregar dados',
-            description: error.message || 'Não foi possível carregar os dados do painel de administração.',
-            variant: 'destructive',
-          });
+          console.error('Erro ao carregar estatísticas:', error);
+        } finally {
+          setLoading(false);
         }
       }
     };
-    fetchData();
-  }, [isAdmin]);
-
-  const handleRoleChange = async (userId: number, newRole: string) => {
-    try {
-      const response = await fetch(`http://localhost:5000/api/admin/users/${userId}/role`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
-        },
-        body: JSON.stringify({ role: newRole }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.msg || 'Erro ao atualizar a função do usuário');
-      }
-
-      setUsers(users.map(u => (u.id === userId ? { ...u, role: newRole } : u)));
-      toast({
-        title: 'Função do usuário atualizada',
-        description: `A função do usuário ${userId} foi alterada para ${newRole}.`,
-      });
-    } catch (error: any) {
-      toast({
-        title: 'Erro ao atualizar função',
-        description: error.message || 'Ocorreu um erro ao atualizar a função do usuário.',
-        variant: 'destructive',
-      });
-    }
-  };
-
-  const handleOrderStatusChange = async (orderId: number, newStatus: string) => {
-    try {
-      const response = await fetch(`http://localhost:5000/api/admin/orders/${orderId}/status`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
-        },
-        body: JSON.stringify({ status: newStatus }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.msg || 'Erro ao atualizar o status do pedido');
-      }
-
-      setOrders(orders.map(o => (o.id === orderId ? { ...o, status: newStatus } : o)));
-      toast({
-        title: 'Status do pedido atualizado',
-        description: `O status do pedido ${orderId} foi alterado para ${newStatus}.`,
-      });
-    } catch (error: any) {
-      toast({
-        title: 'Erro ao atualizar status do pedido',
-        description: error.message || 'Ocorreu um erro ao atualizar o status do pedido.',
-        variant: 'destructive',
-      });
-    }
-  };
+    fetchStats();
+  }, [isAdmin, token]);
 
   const handleLogout = () => {
     logout();
@@ -141,107 +84,203 @@ const AdminDashboardPage: React.FC = () => {
     });
   };
 
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL'
+    }).format(value);
+  };
+
   if (!isAuthenticated || !isAdmin) {
-    return null; // or a loading spinner
+    return null;
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex items-center justify-center">
+        <div className="text-white text-xl">Carregando...</div>
+      </div>
+    );
   }
 
   return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-3xl font-bold mb-6">Painel de Administração</h1>
-      <Button onClick={handleLogout} className="mb-6">Sair</Button>
+    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 p-6">
+      <div className="max-w-7xl mx-auto">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <h1 className="text-3xl font-bold text-white">Painel de Administração</h1>
+            <p className="text-gray-300 mt-2">Bem-vindo, {user?.username}</p>
+          </div>
+          <div className="flex items-center space-x-4">
+            <Link to="/">
+              <Button variant="outline" className="border-purple-500/30 text-purple-400 hover:bg-purple-500/20">
+                Voltar ao Site
+              </Button>
+            </Link>
+            <Button onClick={handleLogout} variant="destructive">
+              Sair
+            </Button>
+          </div>
+        </div>
 
-      <Card className="mb-6">
-        <CardHeader>
-          <CardTitle>Gerenciamento de Usuários</CardTitle>
-          <CardDescription>Visualize e gerencie os usuários do sistema.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>ID</TableHead>
-                <TableHead>Nome de Usuário</TableHead>
-                <TableHead>Email</TableHead>
-                <TableHead>Função</TableHead>
-                <TableHead>Ações</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {users.map((u) => (
-                <TableRow key={u.id}>
-                  <TableCell>{u.id}</TableCell>
-                  <TableCell>{u.username}</TableCell>
-                  <TableCell>{u.email}</TableCell>
-                  <TableCell>{u.role}</TableCell>
-                  <TableCell>
-                    <Select onValueChange={(value) => handleRoleChange(u.id, value)} defaultValue={u.role}>
-                      <SelectTrigger className="w-[180px]">
-                        <SelectValue placeholder="Alterar Função" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="admin">Admin</SelectItem>
-                        <SelectItem value="consumer">Consumidor</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+        {/* Quick Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+          <Card className="bg-gray-900/90 border-purple-500/30">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-gray-300">Total de Usuários</CardTitle>
+              <Users className="h-4 w-4 text-purple-400" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-white">{adminStats?.total_users || 0}</div>
+            </CardContent>
+          </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Gerenciamento de Pedidos</CardTitle>
-          <CardDescription>Visualize e atualize o status dos pedidos.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>ID do Pedido</TableHead>
-                <TableHead>ID do Usuário</TableHead>
-                <TableHead>Usuário</TableHead>
-                <TableHead>Total</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Data</TableHead>
-                <TableHead>Ações</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {orders.map((o) => (
-                <TableRow key={o.id}>
-                  <TableCell>{o.id}</TableCell>
-                  <TableCell>{o.user_id}</TableCell>
-                  <TableCell>{o.username}</TableCell>
-                  <TableCell>R${o.total_price.toFixed(2)}</TableCell>
-                  <TableCell>{o.status}</TableCell>
-                  <TableCell>{new Date(o.created_at).toLocaleDateString()}</TableCell>
-                  <TableCell>
-                    <Select onValueChange={(value) => handleOrderStatusChange(o.id, value)} defaultValue={o.status}>
-                      <SelectTrigger className="w-[180px]">
-                        <SelectValue placeholder="Alterar Status" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="pending">Pendente</SelectItem>
-                        <SelectItem value="processing">Processando</SelectItem>
-                        <SelectItem value="shipped">Enviado</SelectItem>
-                        <SelectItem value="delivered">Entregue</SelectItem>
-                        <SelectItem value="cancelled">Cancelado</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+          <Card className="bg-gray-900/90 border-purple-500/30">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-gray-300">Total de Pedidos</CardTitle>
+              <ShoppingCart className="h-4 w-4 text-blue-400" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-white">{adminStats?.total_orders || 0}</div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-gray-900/90 border-purple-500/30">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-gray-300">Pedidos Pendentes</CardTitle>
+              <AlertTriangle className="h-4 w-4 text-yellow-400" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-white">{orderStats?.status_counts?.pending || 0}</div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-gray-900/90 border-purple-500/30">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-gray-300">Receita Total</CardTitle>
+              <DollarSign className="h-4 w-4 text-green-400" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-white">
+                {formatCurrency(orderStats?.total_revenue || 0)}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Quick Actions */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+          <Link to="/admin/orders">
+            <Card className="bg-gray-900/90 border-purple-500/30 hover:bg-gray-800/90 transition-colors cursor-pointer">
+              <CardHeader>
+                <CardTitle className="text-white flex items-center">
+                  <ShoppingCart className="h-5 w-5 mr-2 text-blue-400" />
+                  Gestão de Pedidos
+                </CardTitle>
+                <CardDescription className="text-gray-400">
+                  Visualize e gerencie todos os pedidos do sistema
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-300">Pedidos pendentes:</span>
+                  <span className="text-yellow-400 font-bold">{orderStats?.status_counts?.pending || 0}</span>
+                </div>
+              </CardContent>
+            </Card>
+          </Link>
+
+          <Link to="/admin/stock">
+            <Card className="bg-gray-900/90 border-purple-500/30 hover:bg-gray-800/90 transition-colors cursor-pointer">
+              <CardHeader>
+                <CardTitle className="text-white flex items-center">
+                  <Package className="h-5 w-5 mr-2 text-green-400" />
+                  Gestão de Estoque
+                </CardTitle>
+                <CardDescription className="text-gray-400">
+                  Controle produtos, estoque e movimentações
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-300">Produtos cadastrados</span>
+                  <span className="text-green-400 font-bold">-</span>
+                </div>
+              </CardContent>
+            </Card>
+          </Link>
+
+          <Card className="bg-gray-900/90 border-purple-500/30">
+            <CardHeader>
+              <CardTitle className="text-white flex items-center">
+                <TrendingUp className="h-5 w-5 mr-2 text-purple-400" />
+                Relatórios
+              </CardTitle>
+              <CardDescription className="text-gray-400">
+                Análises e relatórios de vendas
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center justify-between">
+                <span className="text-gray-300">Receita pendente:</span>
+                <span className="text-purple-400 font-bold">
+                  {formatCurrency(orderStats?.pending_revenue || 0)}
+                </span>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Status Overview */}
+        {orderStats && (
+          <Card className="bg-gray-900/90 border-purple-500/30">
+            <CardHeader>
+              <CardTitle className="text-white">Status dos Pedidos</CardTitle>
+              <CardDescription className="text-gray-400">
+                Distribuição atual dos pedidos por status
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+                {Object.entries(orderStats.status_counts).map(([status, count]) => {
+                  const statusLabels: Record<string, string> = {
+                    pending: 'Pendente',
+                    paid: 'Pago',
+                    processing: 'Processando',
+                    shipped: 'Enviado',
+                    delivered: 'Entregue',
+                    cancelled: 'Cancelado'
+                  };
+
+                  const statusColors: Record<string, string> = {
+                    pending: 'text-yellow-400',
+                    paid: 'text-green-400',
+                    processing: 'text-blue-400',
+                    shipped: 'text-purple-400',
+                    delivered: 'text-green-400',
+                    cancelled: 'text-red-400'
+                  };
+
+                  return (
+                    <div key={status} className="text-center">
+                      <div className={`text-2xl font-bold ${statusColors[status] || 'text-white'}`}>
+                        {count}
+                      </div>
+                      <div className="text-sm text-gray-400">
+                        {statusLabels[status] || status}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+      </div>
     </div>
   );
 };
 
 export default AdminDashboardPage;
-
 

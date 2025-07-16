@@ -7,18 +7,20 @@ from flask import Flask, send_from_directory
 from flask_cors import CORS
 from flask_jwt_extended import JWTManager
 from src.models.user import db
+from src.models.product import Product, StockMovement
 from src.routes.user import user_bp
 from src.routes.auth import auth_bp
 from src.routes.cart import cart_bp
 from src.routes.admin import admin_bp
+from src.routes.orders import orders_bp
+from src.routes.products import products_bp
 
 app = Flask(__name__, static_folder=os.path.join(os.path.dirname(__file__), 'static'))
 app.config['SECRET_KEY'] = 'asdf#FGSgvasgf$5$WGT'
 app.config['JWT_SECRET_KEY'] = 'jwt-secret-string'  # Change this in production
 
 # Enable CORS for all routes
-CORS(app)
-
+CORS(app, origins=["*"])
 # Initialize JWT
 jwt = JWTManager(app)
 
@@ -27,6 +29,8 @@ app.register_blueprint(user_bp, url_prefix='/api')
 app.register_blueprint(auth_bp, url_prefix='/api/auth')
 app.register_blueprint(cart_bp, url_prefix='/api/cart')
 app.register_blueprint(admin_bp, url_prefix='/api/admin')
+app.register_blueprint(orders_bp, url_prefix='/api/orders')
+app.register_blueprint(products_bp, url_prefix='/api/products')
 
 # Database configuration - using SQLite for simplicity
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///gbsite.db'
