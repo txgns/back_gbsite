@@ -56,17 +56,17 @@ def login():
     try:
         data = request.get_json()
         
-        if not data or not data.get('username') or not data.get('password'):
-            return jsonify({'error': 'Username and password are required'}), 400
+        if not data or not data.get("email") or not data.get("password"):
+            return jsonify({"error": "Email and password are required"}), 400
         
-        username = data['username'].strip()
-        password = data['password']
+        email = data["email"].strip().lower()
+        password = data["password"]
         
         # Find user
-        user = User.query.filter_by(username=username).first()
+        user = User.query.filter_by(email=email).first()
         
         if not user or not user.check_password(password):
-            return jsonify({'error': 'Invalid username or password'}), 401
+            return jsonify({"error": "Invalid email or password"}), 401
         
         # Create access token
         access_token = create_access_token(identity=str(user.id))

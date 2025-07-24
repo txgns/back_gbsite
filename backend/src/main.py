@@ -39,6 +39,8 @@ db.init_app(app)
 
 with app.app_context():
     db.create_all()
+    from src.utils.seed_data import seed_admin_user
+    seed_admin_user()
 
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')
