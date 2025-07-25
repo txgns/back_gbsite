@@ -1,13 +1,13 @@
 {
   "rewrites": [
     { "source": "/api/(.*)", "destination": "/backend/api/$1" },
-    { "source": "/(.*)", "destination": "/frontend/index.html" }
+    { "source": "/(.*)", "destination": "/frontend/dist/$1" }
   ],
   "builds": [
     {
       "src": "frontend/package.json",
       "use": "@vercel/static-build",
-      "config": { "distDir": "dist" }
+      "config": { "outputDirectory": "dist" }
     },
     {
       "src": "backend/api/index.py",
@@ -16,5 +16,4 @@
     }
   ]
 }
-
 
