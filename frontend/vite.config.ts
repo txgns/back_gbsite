@@ -3,9 +3,11 @@ import react from "@vitejs/plugin-react-swc";
 import path from "path";
 import { componentTagger } from "lovable-tagger";
 
-// https://vitejs.dev/confiexport default defineConfig({',
+// https://vitejs.dev/config/
+export default defineConfig({
+  base: "./",
   build: {
-    outDir: 'dist',
+    outDir: "dist",
   },
   server: {
     host: "::",
@@ -14,10 +16,11 @@ import { componentTagger } from "lovable-tagger";
   plugins: [
     react(),
     componentTagger(),
-  ].filter(Boolean),
+  ],
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
     },
   },
-}));
+});
+
