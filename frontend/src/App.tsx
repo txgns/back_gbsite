@@ -20,6 +20,8 @@ import AdminDashboardPage from "./pages/AdminDashboardPage";
 import AdminOrdersPage from "./pages/AdminOrdersPage";
 import AdminStockPage from "./pages/AdminStockPage";
 
+import ProtectedRoute from "./components/ProtectedRoute";
+
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -39,10 +41,19 @@ const App = () => (
               <Route path="/project/:id" element={<ProjectDetailPage />} />
               <Route path="/login" element={<LoginPage />} />
               <Route path="/register" element={<RegisterPage />} />
-              <Route path="/dashboard" element={<DashboardPage />} />
-              <Route path="/admin" element={<AdminDashboardPage />} />
-              <Route path="/admin/orders" element={<AdminOrdersPage />} />
-              <Route path="/admin/stock" element={<AdminStockPage />} />
+              
+              {/* Rotas Protegidas */}
+              <Route element={<ProtectedRoute />}>
+                <Route path="/dashboard" element={<DashboardPage />} />
+              </Route>
+
+              {/* Rotas Protegidas para Admin */}
+              <Route element={<ProtectedRoute adminOnly />}>
+                <Route path="/admin" element={<AdminDashboardPage />} />
+                <Route path="/admin/orders" element={<AdminOrdersPage />} />
+                <Route path="/admin/stock" element={<AdminStockPage />} />
+              </Route>
+
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>

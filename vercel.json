@@ -1,7 +1,7 @@
 {
   "rewrites": [
     { "source": "/api/(.*)", "destination": "/backend/api/$1" },
-    { "source": "/(.*)", "destination": "/frontend/dist/$1" }
+    { "source": "/(.*)", "destination": "/frontend/dist/index.html" }
   ],
   "builds": [
     {
