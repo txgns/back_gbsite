@@ -17,19 +17,35 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<any | null>(null);
 
   useEffect(() => {
-    if (token) {
+    const storedToken = localStorage.getItem("token");
+    console.log("AuthContext: useEffect disparado. Token no localStorage:", storedToken);
+
+    if (storedToken) {
       try {
-        const decodedUser = jwtDecode(token);
-        setUser(decodedUser);
+        const decodedUser = jwtDecode(storedToken);
+        // Verifica se o token não expirou
+        if (decodedUser.exp * 1000 > Date.now()) {
+          setToken(storedToken);
+          setUser(decodedUser);
+          console.log("AuthContext: Token válido e decodificado. Usuário:", decodedUser);
+        } else {
+          console.log("AuthContext: Token expirado. Removendo do localStorage.");
+          localStorage.removeItem("token");
+          setToken(null);
+          setUser(null);
+        }
       } catch (error) {
-        console.error('Failed to decode token:', error);
+        console.error("AuthContext: Falha ao decodificar token ou token inválido:", error);
+        localStorage.removeItem("token");
         setToken(null);
-        localStorage.removeItem('token');
+        setUser(null);
       }
     } else {
+      setToken(null);
       setUser(null);
+      console.log("AuthContext: Nenhum token encontrado no localStorage.");
     }
-  }, [token]);
+  }, []); // Array de dependências vazio para rodar apenas uma vez na montagem
 
   const login = (newToken: string) => {
     localStorage.setItem('token', newToken);
