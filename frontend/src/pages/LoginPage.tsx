@@ -29,7 +29,7 @@ const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.msg || 'Erro ao fazer login');
+        throw new Error(errorData.error || errorData.msg || 'Erro ao fazer login');
       }
 
       const data = await response.json();
