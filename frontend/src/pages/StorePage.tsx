@@ -9,28 +9,78 @@ import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { Label } from '@/components/ui/label';
-import products from '@/data/products';
-
-const categories = ['Todos', ...Array.from(new Set(products.map(p => p.category)))];
 
 const StorePage = () => {
   const { addToCart } = useCart();
   const { toast } = useToast();
-  const [filteredProducts, setFilteredProducts] = useState<Product[]>(products);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<string[]>(['Todos']);
   const [selectedCategory, setSelectedCategory] = useState('Todos');
   const [searchQuery, setSearchQuery] = useState('');
-  const [priceRange, setPriceRange] = useState<[number, number]>([0, 200]);
+  const [priceRange, setPriceRange] = useState<[number, number]>([0, 300]);
+  const [maxPrice, setMaxPrice] = useState(300);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8001";
+
+  // Fetch products from backend
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        setIsLoading(true);
+        const response = await fetch(`${API_URL}/api/products/`);
+        
+        if (response.ok) {
+          const data = await response.json();
+          const backendProducts = data.products.map((product: any) => ({
+            id: product.id,
+            name: product.name,
+            price: product.price,
+            image: product.image_url || '/placeholder.svg',
+            category: product.category || 'Geral',
+            description: product.description || ''
+          }));
+          
+          setProducts(backendProducts);
+          setFilteredProducts(backendProducts);
+          
+          // Extract categories
+          const productCategories = Array.from(new Set(backendProducts.map(p => p.category)));
+          setCategories(['Todos', ...productCategories]);
+          
+          // Set max price based on products
+          const maxProductPrice = Math.max(...backendProducts.map(p => p.price));
+          const roundedMax = Math.ceil(maxProductPrice / 50) * 50; // Round up to nearest 50
+          setMaxPrice(roundedMax);
+          setPriceRange([0, roundedMax]);
+          
+          console.log('Products loaded:', backendProducts.length);
+        } else {
+          console.error('Failed to fetch products:', response.statusText);
+          toast({
+            title: "Erro ao carregar produtos",
+            description: "Não foi possível carregar os produtos da loja.",
+            variant: "destructive",
+          });
+        }
+      } catch (error) {
+        console.error('Error fetching products:', error);
+        toast({
+          title: "Erro de conexão",
+          description: "Erro ao conectar com o servidor.",
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, [API_URL, toast]);
 
   useEffect(() => {
     window.scrollTo(0, 0);
-    
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 1500);
-    
-    return () => clearTimeout(timer);
   }, []);
 
   useEffect(() => {
@@ -53,7 +103,7 @@ const StorePage = () => {
     );
     
     setFilteredProducts(result);
-  }, [selectedCategory, searchQuery, priceRange]);
+  }, [products, selectedCategory, searchQuery, priceRange]);
 
   const handleSliderChange = (value: number[]) => {
     const min = value[0];
@@ -93,7 +143,7 @@ const StorePage = () => {
               <span className="text-gradient">Gambiarra Store</span>
             </h1>
             <p className="text-white/70 max-w-2xl mx-auto">
-              Produtos oficiais da nossa equipe de robótica.
+              Produtos de robótica e componentes eletrônicos.
             </p>
           </div>
           
@@ -166,7 +216,7 @@ const StorePage = () => {
                   <div className="pt-2">
                     <Slider 
                       value={[priceRange[0], priceRange[1]]} 
-                      max={200} 
+                      max={maxPrice} 
                       step={1} 
                       minStepsBetweenThumbs={1}
                       onValueChange={handleSliderChange}
@@ -180,7 +230,7 @@ const StorePage = () => {
                       <div className="relative">
                         <span className="absolute left-3 top-1/2 -translate-y-1/2 text-white/70 text-xs">R$</span>
                         <div className="pl-8 py-2 h-8 bg-robotics-black-lighter border border-white/10 rounded-md text-white text-sm flex items-center">
-                          {priceRange[0]}
+                          {priceRange[0].toFixed(2)}
                         </div>
                       </div>
                     </div>
@@ -189,7 +239,7 @@ const StorePage = () => {
                       <div className="relative">
                         <span className="absolute left-3 top-1/2 -translate-y-1/2 text-white/70 text-xs">R$</span>
                         <div className="pl-8 py-2 h-8 bg-robotics-black-lighter border border-white/10 rounded-md text-white text-sm flex items-center">
-                          {priceRange[1]}
+                          {priceRange[1].toFixed(2)}
                         </div>
                       </div>
                     </div>
@@ -206,7 +256,7 @@ const StorePage = () => {
                     <div className="px-2 pt-2">
                       <Slider 
                         value={[priceRange[0], priceRange[1]]}
-                        max={200} 
+                        max={maxPrice} 
                         step={1} 
                         minStepsBetweenThumbs={1}
                         onValueChange={handleSliderChange}
@@ -219,7 +269,7 @@ const StorePage = () => {
                         <div className="relative">
                           <span className="absolute left-3 top-1/2 -translate-y-1/2 text-white/70 text-xs">R$</span>
                           <div className="pl-8 py-2 h-8 bg-robotics-black-lighter border border-white/10 rounded-md text-white text-sm flex items-center">
-                            {priceRange[0]}
+                            {priceRange[0].toFixed(2)}
                           </div>
                         </div>
                       </div>
@@ -228,7 +278,7 @@ const StorePage = () => {
                         <div className="relative">
                           <span className="absolute left-3 top-1/2 -translate-y-1/2 text-white/70 text-xs">R$</span>
                           <div className="pl-8 py-2 h-8 bg-robotics-black-lighter border border-white/10 rounded-md text-white text-sm flex items-center">
-                            {priceRange[1]}
+                            {priceRange[1].toFixed(2)}
                           </div>
                         </div>
                       </div>
@@ -252,6 +302,10 @@ const StorePage = () => {
                         src={product.image} 
                         alt={product.name}
                         className="absolute inset-0 w-full h-full object-contain p-4"
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.src = '/placeholder.svg';
+                        }}
                       />
                     </div>
                   </Link>
@@ -280,17 +334,21 @@ const StorePage = () => {
             </div>
           ) : (
             <div className="text-center py-12">
-              <div className="text-white/70 mb-2">Nenhum produto encontrado</div>
-              <button
-                onClick={() => {
-                  setSelectedCategory('Todos');
-                  setSearchQuery('');
-                  setPriceRange([0, 200]);
-                }}
-                className="text-robotics-purple hover:text-robotics-purple-light"
-              >
-                Limpar filtros
-              </button>
+              <div className="text-white/70 mb-2">
+                {products.length === 0 ? 'Carregando produtos...' : 'Nenhum produto encontrado'}
+              </div>
+              {products.length > 0 && (
+                <button
+                  onClick={() => {
+                    setSelectedCategory('Todos');
+                    setSearchQuery('');
+                    setPriceRange([0, maxPrice]);
+                  }}
+                  className="text-robotics-purple hover:text-robotics-purple-light"
+                >
+                  Limpar filtros
+                </button>
+              )}
             </div>
           )}
         </div>
