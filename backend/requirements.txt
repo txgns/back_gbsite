@@ -3,5 +3,7 @@ Flask-CORS
 Flask-JWT-Extended
 Flask-SQLAlchemy
 SQLAlchemy
+bcrypt
+python-dotenv
 
 
