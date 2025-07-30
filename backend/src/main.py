@@ -1,5 +1,10 @@
 import os
 import sys
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
+
 # DON'T CHANGE THIS !!!
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
@@ -16,8 +21,10 @@ from src.routes.orders import orders_bp
 from src.routes.products import products_bp
 
 app = Flask(__name__, static_folder=os.path.join(os.path.dirname(__file__), 'static'))
-app.config['SECRET_KEY'] = 'asdf#FGSgvasgf$5$WGT'
-app.config['JWT_SECRET_KEY'] = 'jwt-secret-string'  # Change this in production
+
+# Configuration from environment variables
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'asdf#FGSgvasgf$5$WGT')
+app.config['JWT_SECRET_KEY'] = os.environ.get('JWT_SECRET_KEY', 'jwt-secret-string-gbsite-2024')
 
 # Enable CORS for all routes
 CORS(app, origins=["*"])
@@ -33,14 +40,16 @@ app.register_blueprint(orders_bp, url_prefix='/api/orders')
 app.register_blueprint(products_bp, url_prefix='/api/products')
 
 # Database configuration - using SQLite for simplicity
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///gbsite.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('SQLALCHEMY_DATABASE_URI', 'sqlite:///gbsite.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db.init_app(app)
 
 with app.app_context():
     db.create_all()
-    from src.utils.seed_data import seed_admin_user
+    from src.utils.seed_data import seed_admin_user, seed_sample_products
     seed_admin_user()
+    seed_sample_products()
+    db.session.commit()
 
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')
@@ -58,7 +67,11 @@ def serve(path):
         else:
             return "index.html not found", 404
 
+# Health check endpoint
+@app.route('/api/health')
+def health_check():
+    return {'status': 'ok', 'message': 'GBSite API is running'}, 200
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(host='0.0.0.0', port=8001, debug=True)
 
