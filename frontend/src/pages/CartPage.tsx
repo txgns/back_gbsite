@@ -116,21 +116,13 @@ const CartPage = () => {
                 
                 {/* Cart item list */}
                 <div className="divide-y divide-white/10">
-                  {cart.map((item) => {
-                    // Handle both local cart items and API cart items
-                    const itemId = isAuthenticated ? item.id : item.id;
-                    const itemName = isAuthenticated ? item.product_name : item.name;
-                    const itemPrice = isAuthenticated ? item.product_price : item.price;
-                    const itemImage = isAuthenticated ? '/placeholder-product.jpg' : item.image;
-                    const itemCategory = isAuthenticated ? 'Produto' : item.category;
-                    
-                    return (
-                    <div key={itemId} className="p-4 sm:p-6 flex flex-col sm:flex-row sm:items-center">
+                  {cart.map((item) => (
+                    <div key={item.id} className="p-4 sm:p-6 flex flex-col sm:flex-row sm:items-center">
                       {/* Product image */}
                       <div className="flex-shrink-0 w-full sm:w-20 h-20 bg-robotics-black-lighter rounded-md mb-4 sm:mb-0 mr-6 flex items-center justify-center">
                         <img 
-                          src={itemImage} 
-                          alt={itemName}
+                          src="/placeholder-product.jpg" 
+                          alt={item.product_name}
                           className="max-w-full max-h-full object-contain p-2"
                         />
                       </div>
@@ -138,16 +130,16 @@ const CartPage = () => {
                       {/* Product details */}
                       <div className="flex-grow">
                         <div className="text-white font-medium">
-                          {itemName}
+                          {item.product_name}
                         </div>
-                        <div className="text-sm text-robotics-purple-light">{itemCategory}</div>
-                        <div className="text-white mt-1">R$ {itemPrice.toFixed(2)}</div>
+                        <div className="text-sm text-robotics-purple-light">Produto</div>
+                        <div className="text-white mt-1">R$ {item.product_price.toFixed(2)}</div>
                       </div>
                       
                       {/* Quantity controls */}
                       <div className="flex items-center mt-4 sm:mt-0 sm:ml-6">
                         <button
-                          onClick={() => handleUpdateQuantity(itemId, item.quantity - 1)}
+                          onClick={() => handleUpdateQuantity(item.id, item.quantity - 1)}
                           className="p-1 text-white/70 hover:text-white"
                           aria-label="Diminuir quantidade"
                         >
@@ -155,7 +147,7 @@ const CartPage = () => {
                         </button>
                         <div className="w-8 text-center text-white">{item.quantity}</div>
                         <button
-                          onClick={() => handleUpdateQuantity(itemId, item.quantity + 1)}
+                          onClick={() => handleUpdateQuantity(item.id, item.quantity + 1)}
                           className="p-1 text-white/70 hover:text-white"
                           aria-label="Aumentar quantidade"
                         >
@@ -165,20 +157,19 @@ const CartPage = () => {
                       
                       {/* Item total price */}
                       <div className="mt-4 sm:mt-0 sm:ml-6 text-white font-medium">
-                        R$ {(itemPrice * item.quantity).toFixed(2)}
+                        R$ {(item.product_price * item.quantity).toFixed(2)}
                       </div>
                       
                       {/* Remove button */}
                       <button
-                        onClick={() => handleRemoveFromCart(itemId)}
+                        onClick={() => handleRemoveFromCart(item.id)}
                         className="mt-4 sm:mt-0 sm:ml-4 p-2 text-white/50 hover:text-white/80"
                         aria-label="Remover item"
                       >
                         <Trash2 size={18} />
                       </button>
                     </div>
-                    );
-                  })}
+                  ))}
                 </div>
               </div>
             </div>
