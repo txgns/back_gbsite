@@ -45,6 +45,10 @@ def update_user_profile(
             )
         current_user.email = user_update.email
     
+    # Update avatar URL
+    if user_update.avatar_url is not None:  # Allow empty string to remove avatar
+        current_user.avatar_url = user_update.avatar_url
+    
     db.commit()
     db.refresh(current_user)
     
