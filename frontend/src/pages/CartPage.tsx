@@ -6,44 +6,59 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { useCart } from '@/context/CartContext';
 import { useAuth } from '@/context/AuthContext';
-import { useCartAPI } from '@/hooks/useCartAPI';
 import { Button } from '@/components/ui/button';
+import { useToast } from '@/hooks/use-toast';
 
 const CartPage = () => {
-  const { cart: localCart, removeFromCart: removeFromLocalCart, updateQuantity: updateLocalQuantity, totalItems: localTotalItems, totalPrice: localTotalPrice } = useCart();
-  const { isAuthenticated, user } = useAuth();
-  const { cart: apiCart, removeFromCart: removeFromAPICart, updateCartItem, checkout } = useCartAPI();
+  const { cart, removeFromCart, updateQuantity, totalItems, totalPrice, clearCart } = useCart();
+  const { isAuthenticated, user, token } = useAuth();
   const navigate = useNavigate();
+  const { toast } = useToast();
 
-  // Use API cart if authenticated, otherwise use local cart
-  const cart = isAuthenticated ? apiCart.cart_items : localCart;
-  const totalItems = isAuthenticated ? apiCart.total_items : localTotalItems;
-  const totalPrice = isAuthenticated ? apiCart.total_amount : localTotalPrice;
-
-  const handleRemoveFromCart = async (itemId: number | string) => {
-    if (isAuthenticated) {
-      await removeFromAPICart(Number(itemId));
-    } else {
-      removeFromLocalCart(Number(itemId));
-    }
+  const handleRemoveFromCart = async (itemId: number) => {
+    await removeFromCart(itemId);
   };
 
-  const handleUpdateQuantity = async (itemId: number | string, quantity: number) => {
-    if (isAuthenticated) {
-      await updateCartItem(Number(itemId), quantity);
+  const handleUpdateQuantity = async (itemId: number, quantity: number) => {
+    if (quantity <= 0) {
+      await removeFromCart(itemId);
     } else {
-      updateLocalQuantity(Number(itemId), quantity);
+      await updateQuantity(itemId, quantity);
     }
   };
 
   const handleCheckout = async () => {
-    if (isAuthenticated) {
-      const result = await checkout();
-      if (result.success) {
+    if (!isAuthenticated) {
+      navigate('/login');
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/orders/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (response.ok) {
+        await clearCart();
+        toast({
+          title: 'Pedido realizado com sucesso!',
+          description: 'Seu pedido foi processado e será enviado em breve.',
+        });
         navigate('/dashboard');
+      } else {
+        throw new Error('Erro ao processar o pedido');
       }
-    } else {
-      navigate('/checkout');
+    } catch (error) {
+      console.error('Checkout error:', error);
+      toast({
+        title: 'Erro no checkout',
+        description: 'Não foi possível processar seu pedido. Tente novamente.',
+        variant: 'destructive',
+      });
     }
   };
 
