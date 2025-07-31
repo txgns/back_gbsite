@@ -290,6 +290,23 @@ class GBSiteAPITester:
             return True
         return False
 
+    def test_admin_get_stats(self):
+        """Test admin get statistics"""
+        success, response = self.run_test(
+            "Admin Get Stats",
+            "GET",
+            "admin/stats",
+            200,
+            use_admin=True
+        )
+        
+        if success and 'total_users' in response:
+            print(f"   Total users: {response['total_users']}")
+            print(f"   Total orders: {response['total_orders']}")
+            print(f"   Total revenue: ${response['total_revenue']}")
+            return True
+        return False
+
     def test_clear_cart(self):
         """Test clearing cart"""
         success, response = self.run_test(
