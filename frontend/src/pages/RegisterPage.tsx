@@ -4,6 +4,7 @@ import { Mail, Lock, UserPlus, User, ArrowLeft } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
+import { api } from '@/lib/api';
 
 const RegisterPage = () => {
   const [username, setUsername] = useState('');
