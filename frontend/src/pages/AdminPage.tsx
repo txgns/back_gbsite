@@ -456,7 +456,7 @@ const AdminPage: React.FC = () => {
                     <tbody>
                       {loading ? (
                         <tr>
-                          <td colSpan={5} className="text-center p-8 text-white/70">
+                          <td colSpan={6} className="text-center p-8 text-white/70">
                             Carregando usuários...
                           </td>
                         </tr>
