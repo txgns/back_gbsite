@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from "react";
 import { initMercadoPago } from "@mercadopago/sdk-react";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
 
 // Chave pública do Mercado Pago - em produção, isso deve vir de variáveis de ambiente
