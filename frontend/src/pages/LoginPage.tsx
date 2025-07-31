@@ -1,25 +1,26 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
+import { Mail, Lock, LogIn, ArrowLeft } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
+import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
-import { useToast } from '@/components/ui/use-toast';
 
-const LoginPage: React.FC = () => {
+const LoginPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  
   const { login } = useAuth();
-  const navigate = useNavigate();
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    try {
-    const API_URL = import.meta.env.VITE_API_URL || "http://127.0.0.1:8001";
+    setIsLoading(true);
 
-      const response = await fetch(`${API_URL}/api/auth/login`, {
+    try {
+      console.log('Tentando fazer login...');
+      const response = await fetch('/api/auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -29,10 +30,12 @@ const LoginPage: React.FC = () => {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || errorData.msg || 'Erro ao fazer login');
+        throw new Error(errorData.error || errorData.detail || 'Erro ao fazer login');
       }
 
       const data = await response.json();
+      console.log('Login response:', data);
+      
       login(data.access_token, data.user);
       toast({
         title: 'Login bem-sucedido!',
@@ -40,74 +43,105 @@ const LoginPage: React.FC = () => {
       });
       navigate('/dashboard');
     } catch (error: any) {
+      console.error('Login error:', error);
       toast({
         title: 'Erro de Login',
         description: error.message || 'Ocorreu um erro. Por favor, tente novamente.',
         variant: 'destructive',
       });
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/20"></div>
-      <Card className="w-full max-w-md relative z-10 bg-gray-900/90 border-purple-500/30 backdrop-blur-sm">
-        <CardHeader className="space-y-1 text-center">
-          <div className="flex items-center justify-center mb-4">
-            <div className="w-12 h-12 bg-green-500 rounded-lg flex items-center justify-center">
-              <span className="text-2xl font-bold text-black">G</span>
-            </div>
-          </div>
-          <CardTitle className="text-2xl font-bold text-white">Login</CardTitle>
-          <CardDescription className="text-gray-300">
-            Entre com seu email e senha para acessar sua conta.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email" className="text-green-400 font-medium">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="m@example.com"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="bg-gray-800/50 border-purple-500/30 text-white placeholder:text-gray-400 focus:border-green-400 focus:ring-green-400"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="password" className="text-green-400 font-medium">Senha</Label>
-              <Input
-                id="password"
-                type="password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="bg-gray-800/50 border-purple-500/30 text-white placeholder:text-gray-400 focus:border-green-400 focus:ring-green-400"
-              />
-            </div>
-            <Button 
-              type="submit" 
-              className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-medium py-2 px-4 rounded-md transition-all duration-200"
-            >
-              Entrar
+    <div className="min-h-screen bg-robotics-black flex items-center justify-center p-4">
+      <div className="w-full max-w-md">
+        <div className="mb-4">
+          <Link to="/">
+            <Button variant="outline" className="gap-2 text-white/80 hover:bg-robotics-black-lighter hover:text-white border-white/10">
+              <ArrowLeft size={16} />
+              <span>Voltar ao Início</span>
             </Button>
+          </Link>
+        </div>
+
+        <div className="glass-card p-8 rounded-lg">
+          <div className="text-center mb-8">
+            <div className="w-16 h-16 bg-gradient-to-br from-robotics-purple to-robotics-purple-light rounded-full flex items-center justify-center mx-auto mb-4">
+              <span className="text-white text-2xl font-bold">G</span>
+            </div>
+            <h1 className="text-2xl font-bold text-white mb-2">Login</h1>
+            <p className="text-white/70">Entre com seu email e senha para acessar sua conta.</p>
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div>
+              <label htmlFor="email" className="block text-sm font-medium text-white mb-2">
+                Email
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                  <Mail className="w-5 h-5 text-gray-400" />
+                </div>
+                <input
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2 bg-robotics-black-light border border-white/10 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-robotics-purple focus:border-transparent"
+                  placeholder="seu@email.com"
+                  required
+                />
+              </div>
+            </div>
+
+            <div>
+              <label htmlFor="password" className="block text-sm font-medium text-white mb-2">
+                Senha
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                  <Lock className="w-5 h-5 text-gray-400" />
+                </div>
+                <input
+                  id="password"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2 bg-robotics-black-light border border-white/10 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-robotics-purple focus:border-transparent"
+                  placeholder="••••••••"
+                  required
+                />
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-gradient-to-r from-robotics-purple to-robotics-purple-light text-white font-medium rounded-md hover:from-robotics-purple-light hover:to-robotics-purple transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isLoading ? (
+                <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+              ) : (
+                <LogIn size={18} />
+              )}
+              <span>{isLoading ? 'Entrando...' : 'Entrar'}</span>
+            </button>
           </form>
-        </CardContent>
-        <CardFooter className="flex justify-center">
-          <p className="text-sm text-gray-400">
-            Não tem uma conta?{' '}
-            <Link to="/register" className="font-medium text-green-400 hover:text-green-300 hover:underline transition-colors">
-              Registre-se
-            </Link>
-          </p>
-        </CardFooter>
-      </Card>
+
+          <div className="mt-6 text-center">
+            <p className="text-white/70">
+              Não tem uma conta?{' '}
+              <Link to="/register" className="text-robotics-purple hover:text-robotics-purple-light transition-colors">
+                Registre-se
+              </Link>
+            </p>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
 
 export default LoginPage;
-

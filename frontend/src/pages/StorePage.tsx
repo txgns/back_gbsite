@@ -22,17 +22,20 @@ const StorePage = () => {
   const [maxPrice, setMaxPrice] = useState(300);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const API_URL = import.meta.env.VITE_API_URL || "http://127.0.0.1:8001";
 
   // Fetch products from backend
   useEffect(() => {
     const fetchProducts = async () => {
       try {
         setIsLoading(true);
-        const response = await fetch(`${API_URL}/api/products/`);
+        console.log('Fetching products from API...');
+        
+        const response = await fetch('/api/products/');
         
         if (response.ok) {
           const data = await response.json();
+          console.log('Products fetched:', data);
+          
           const backendProducts = data.products.map((product: any) => ({
             id: product.id,
             name: product.name,
@@ -57,7 +60,7 @@ const StorePage = () => {
           
           console.log('Products loaded:', backendProducts.length);
         } else {
-          console.error('Failed to fetch products:', response.statusText);
+          console.error('Failed to fetch products:', response.status, response.statusText);
           toast({
             title: "Erro ao carregar produtos",
             description: "Não foi possível carregar os produtos da loja.",
@@ -77,7 +80,7 @@ const StorePage = () => {
     };
 
     fetchProducts();
-  }, [API_URL, toast]);
+  }, [toast]);
 
   useEffect(() => {
     window.scrollTo(0, 0);
