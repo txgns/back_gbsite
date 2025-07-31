@@ -64,7 +64,16 @@ def login_user(user_credentials: UserLogin, db: Session = Depends(get_db)):
     
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(
-        data={"sub": str(user.id)}, expires_delta=access_token_expires
+        data={
+            "sub": str(user.id),
+            "id": user.id,
+            "username": user.username,
+            "email": user.email,
+            "role": user.role,
+            "avatar_url": user.avatar_url,
+            "created_at": user.created_at.isoformat() if user.created_at else None
+        }, 
+        expires_delta=access_token_expires
     )
     
     return {
