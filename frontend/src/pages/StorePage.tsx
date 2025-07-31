@@ -22,12 +22,12 @@ const StorePage = () => {
   const [maxPrice, setMaxPrice] = useState(300);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [showStore, setShowStore] = useState(false);
 
   // Fetch products from backend
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        setIsLoading(true);
         console.log('Fetching products from API...');
         
         const response = await fetch('/api/products/');
@@ -74,12 +74,21 @@ const StorePage = () => {
           description: "Erro ao conectar com o servidor.",
           variant: "destructive",
         });
-      } finally {
-        setIsLoading(false);
       }
     };
 
+    // Show loading screen for at least 2 seconds
+    const loadingTimer = setTimeout(() => {
+      setIsLoading(false);
+      setShowStore(true);
+    }, 2000);
+
+    // Fetch products
     fetchProducts();
+
+    return () => {
+      clearTimeout(loadingTimer);
+    };
   }, [toast]);
 
   useEffect(() => {
