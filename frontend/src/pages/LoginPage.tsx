@@ -21,13 +21,7 @@ const LoginPage = () => {
 
     try {
       console.log('Tentando fazer login...');
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/login`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
-      });
+      const response = await api.post('/api/auth/login', { email, password });
 
       if (!response.ok) {
         const errorData = await response.json();
