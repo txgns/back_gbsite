@@ -75,14 +75,16 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const addToCart = async (product: Product) => {
     if (!isAuthenticated || !token) {
-      alert("Por favor, faça login para adicionar itens ao carrinho.");
-      return;
+      console.error('User must be logged in to add items to cart');
+      throw new Error('Você precisa estar logado para adicionar itens ao carrinho');
     }
+
     try {
-      const response = await fetch(`${API_URL}/api/cart/add`, {
-        method: "POST",
+      console.log('Adding product to cart:', product);
+      const response = await fetch('/api/cart/add', {
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
@@ -92,13 +94,18 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           quantity: 1,
         }),
       });
+
       if (response.ok) {
-        await fetchCart(); // Refresh cart after adding
+        console.log('Product added to cart successfully');
+        await fetchCart(); // Refresh cart
       } else {
-        console.error("Failed to add to cart:", response.statusText);
+        const errorData = await response.json().catch(() => ({}));
+        console.error('Failed to add to cart:', response.status, response.statusText, errorData);
+        throw new Error(errorData.detail || 'Erro ao adicionar item ao carrinho');
       }
     } catch (error) {
-      console.error("Error adding to cart:", error);
+      console.error('Error adding to cart:', error);
+      throw error;
     }
   };
 
