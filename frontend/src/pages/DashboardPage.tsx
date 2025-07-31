@@ -196,14 +196,25 @@ const DashboardPage: React.FC = () => {
                   </span>
                 </div>
               </div>
-              <Button 
-                onClick={handleLogout} 
-                variant="outline" 
-                className="mt-6 w-full gap-2 text-white/80 hover:text-white border-white/20 hover:bg-robotics-black-lighter"
-              >
-                <LogOut size={16} />
-                Sair
-              </Button>
+              <div className="flex gap-2">
+                <Link to="/profile/edit">
+                  <Button 
+                    variant="outline" 
+                    className="flex-1 gap-2 text-white/80 hover:text-white border-white/20 hover:bg-robotics-black-lighter"
+                  >
+                    <Edit size={16} />
+                    Editar Perfil
+                  </Button>
+                </Link>
+                <Button 
+                  onClick={handleLogout} 
+                  variant="outline" 
+                  className="flex-1 gap-2 text-white/80 hover:text-white border-white/20 hover:bg-robotics-black-lighter"
+                >
+                  <LogOut size={16} />
+                  Sair
+                </Button>
+              </div>
             </CardContent>
           </Card>
 
