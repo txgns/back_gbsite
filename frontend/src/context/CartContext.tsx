@@ -134,22 +134,26 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const updateQuantity = async (cartItemId: number, quantity: number) => {
     if (!isAuthenticated || !token) return;
+
     try {
-      const response = await fetch(`${API_URL}/api/cart/update/${cartItemId}`, {
-        method: "PUT",
+      console.log('Updating cart item quantity:', cartItemId, quantity);
+      const response = await fetch(`/api/cart/update/${cartItemId}`, {
+        method: 'PUT',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({ quantity }),
       });
+
       if (response.ok) {
-        await fetchCart(); // Refresh cart after updating
+        console.log('Quantity updated successfully');
+        await fetchCart();
       } else {
-        console.error("Failed to update quantity:", response.statusText);
+        console.error('Failed to update quantity:', response.statusText);
       }
     } catch (error) {
-      console.error("Error updating quantity:", error);
+      console.error('Error updating quantity:', error);
     }
   };
 
