@@ -339,6 +339,7 @@ def main():
         ("Admin Get All Users", tester.test_admin_get_all_orders),
         ("Admin Create Product", tester.test_admin_create_product),
         ("Admin Get Low Stock", tester.test_admin_get_low_stock),
+        ("Admin Get Stats", tester.test_admin_get_stats),
         ("Clear Cart", tester.test_clear_cart),
     ]
     
