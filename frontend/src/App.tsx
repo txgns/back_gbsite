@@ -47,6 +47,7 @@ const App = () => (
               {/* Rotas Protegidas */}
               <Route element={<ProtectedRoute />}>
                 <Route path="/dashboard" element={<DashboardPage />} />
+                <Route path="/profile/edit" element={<EditProfilePage />} />
               </Route>
 
               {/* Rotas Protegidas para Admin */}
