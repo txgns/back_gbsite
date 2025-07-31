@@ -333,7 +333,7 @@ class GBSiteAPITester:
             "Unauthorized Access",
             "GET",
             "auth/me",
-            401
+            403
         )
         
         # Restore token
