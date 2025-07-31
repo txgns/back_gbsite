@@ -450,6 +450,7 @@ const AdminPage: React.FC = () => {
                         <th className="text-left p-4 text-white/70 font-medium">Email</th>
                         <th className="text-left p-4 text-white/70 font-medium">Função</th>
                         <th className="text-left p-4 text-white/70 font-medium">Data de Criação</th>
+                        <th className="text-left p-4 text-white/70 font-medium">Ações</th>
                       </tr>
                     </thead>
                     <tbody>
