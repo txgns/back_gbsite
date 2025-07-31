@@ -139,7 +139,8 @@ const StorePage = () => {
     }
   };
 
-  if (isLoading) {
+  // Show loading screen
+  if (isLoading || !showStore) {
     return <LoadingScreen />;
   }
 
