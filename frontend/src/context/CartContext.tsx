@@ -69,7 +69,9 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
+  // Fetch cart when auth state changes
   useEffect(() => {
+    console.log('CartContext: Auth state changed, isAuthenticated:', isAuthenticated);
     fetchCart();
   }, [isAuthenticated, token]);
 
