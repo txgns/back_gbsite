@@ -5,7 +5,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/com
 import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/use-toast';
 import { useCart } from '@/context/CartContext';
-import { ShoppingCart, Store, Home, User, Package, LogOut, Settings } from 'lucide-react';
+import { ShoppingCart, Store, Home, User, Package, LogOut, Settings, Edit } from 'lucide-react';
 
 interface Order {
   id: number;
