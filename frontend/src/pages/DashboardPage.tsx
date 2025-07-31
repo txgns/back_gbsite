@@ -163,7 +163,7 @@ const DashboardPage: React.FC = () => {
                   <p className="text-2xl font-bold text-white">R$ {totalPrice.toFixed(2)}</p>
                 </div>
               </div>
-            </Card>
+            </CardContent>
           </Card>
         </div>
 
