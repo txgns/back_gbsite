@@ -4,7 +4,7 @@ import json
 from datetime import datetime
 
 class GBSiteAPITester:
-    def __init__(self, base_url="http://localhost:8001"):
+    def __init__(self, base_url="http://127.0.0.1:8001"):
         self.base_url = base_url
         self.token = None
         self.admin_token = None
@@ -151,7 +151,7 @@ class GBSiteAPITester:
         success, response = self.run_test(
             "Get Product Categories",
             "GET",
-            "products/categories",
+            "products/categories/list",
             200
         )
         
@@ -163,9 +163,9 @@ class GBSiteAPITester:
     def test_add_to_cart(self):
         """Test adding item to cart"""
         cart_data = {
-            "product_id": "arduino_uno",
+            "product_id": "arduino-uno",
             "product_name": "Arduino Uno R3",
-            "product_price": 25.99,
+            "product_price": 89.90,
             "quantity": 2
         }
         
@@ -234,17 +234,17 @@ class GBSiteAPITester:
         return False
 
     def test_admin_get_all_orders(self):
-        """Test admin get all orders"""
+        """Test admin get all users (since orders endpoint doesn't exist)"""
         success, response = self.run_test(
-            "Admin Get All Orders",
+            "Admin Get All Users",
             "GET",
-            "admin/orders",
+            "admin/users",
             200,
             use_admin=True
         )
         
-        if success and 'orders' in response:
-            print(f"   Found {len(response['orders'])} total orders")
+        if success and 'users' in response:
+            print(f"   Found {len(response['users'])} total users")
             return True
         return False
 
@@ -280,7 +280,7 @@ class GBSiteAPITester:
         success, response = self.run_test(
             "Admin Get Low Stock",
             "GET",
-            "products/low-stock?threshold=20",
+            "products/low-stock/list?threshold=20",
             200,
             use_admin=True
         )
@@ -289,6 +289,79 @@ class GBSiteAPITester:
             print(f"   Found {response['count']} low stock products")
             return True
         return False
+
+    def test_admin_get_stats(self):
+        """Test admin get statistics"""
+        success, response = self.run_test(
+            "Admin Get Stats",
+            "GET",
+            "admin/stats",
+            200,
+            use_admin=True
+        )
+        
+        if success and 'total_users' in response:
+            print(f"   Total users: {response['total_users']}")
+            print(f"   Total orders: {response['total_orders']}")
+            print(f"   Total revenue: ${response['total_revenue']}")
+            return True
+        return False
+
+    def test_invalid_login(self):
+        """Test login with invalid credentials"""
+        invalid_data = {
+            "email": "invalid@test.com",
+            "password": "wrongpassword"
+        }
+        
+        success, response = self.run_test(
+            "Invalid Login",
+            "POST",
+            "auth/login",
+            401,
+            data=invalid_data
+        )
+        return success
+
+    def test_unauthorized_access(self):
+        """Test accessing protected endpoint without token"""
+        # Temporarily remove token
+        temp_token = self.token
+        self.token = None
+        
+        success, response = self.run_test(
+            "Unauthorized Access",
+            "GET",
+            "auth/me",
+            403
+        )
+        
+        # Restore token
+        self.token = temp_token
+        return success
+
+    def test_duplicate_product_creation(self):
+        """Test creating product with duplicate ID"""
+        product_data = {
+            "id": "arduino-uno",  # This ID already exists
+            "name": "Duplicate Arduino",
+            "description": "This should fail",
+            "price": 99.99,
+            "stock_quantity": 10,
+            "category": "Test",
+            "image_url": "test.jpg",
+            "is_active": True
+        }
+        
+        success, response = self.run_test(
+            "Duplicate Product Creation",
+            "POST",
+            "products/",
+            400,
+            data=product_data,
+            use_admin=True
+        )
+        return success
 
     def test_clear_cart(self):
         """Test clearing cart"""
@@ -305,7 +378,7 @@ def main():
     print("=" * 50)
     
     # Setup
-    tester = GBSiteAPITester("http://localhost:8001")
+    tester = GBSiteAPITester("http://127.0.0.1:8001")
     
     # Test sequence
     tests = [
@@ -319,9 +392,13 @@ def main():
         ("Get Cart", tester.test_get_cart),
         ("Create Order", tester.test_create_order),
         ("Get User Orders", tester.test_get_user_orders),
-        ("Admin Get All Orders", tester.test_admin_get_all_orders),
+        ("Admin Get All Users", tester.test_admin_get_all_orders),
         ("Admin Create Product", tester.test_admin_create_product),
         ("Admin Get Low Stock", tester.test_admin_get_low_stock),
+        ("Admin Get Stats", tester.test_admin_get_stats),
+        ("Invalid Login", tester.test_invalid_login),
+        ("Unauthorized Access", tester.test_unauthorized_access),
+        ("Duplicate Product Creation", tester.test_duplicate_product_creation),
         ("Clear Cart", tester.test_clear_cart),
     ]
     

@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 from typing import List
 import math
 
@@ -87,7 +88,7 @@ def get_admin_stats(
     total_orders = db.query(Order).count()
     pending_orders = db.query(Order).filter(Order.status == "pending").count()
     total_revenue = db.query(Order).filter(Order.status.in_(["paid", "processing", "shipped", "delivered"])).with_entities(
-        db.func.sum(Order.total_amount)
+        func.sum(Order.total_amount)
     ).scalar() or 0
     
     return {
