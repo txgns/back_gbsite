@@ -163,9 +163,9 @@ class GBSiteAPITester:
     def test_add_to_cart(self):
         """Test adding item to cart"""
         cart_data = {
-            "product_id": "arduino_uno",
+            "product_id": "arduino-uno",
             "product_name": "Arduino Uno R3",
-            "product_price": 25.99,
+            "product_price": 89.90,
             "quantity": 2
         }
         
