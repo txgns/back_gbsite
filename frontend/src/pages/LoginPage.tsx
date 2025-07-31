@@ -33,7 +33,7 @@ const LoginPage: React.FC = () => {
       }
 
       const data = await response.json();
-      login(data.access_token);
+      login(data.access_token, data.user);
       toast({
         title: 'Login bem-sucedido!',
         description: 'Você foi logado com sucesso.',
