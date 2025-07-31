@@ -7,15 +7,22 @@ interface ProtectedRouteProps {
 }
 
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ adminOnly = false }) => {
-  const { isAuthenticated, isAdmin } = useAuth();
+  const { isAuthenticated, isAdmin, isLoading } = useAuth();
+
+  // Show loading while checking authentication
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-robotics-black flex items-center justify-center">
+        <div className="text-white text-lg">Carregando...</div>
+      </div>
+    );
+  }
 
   if (!isAuthenticated) {
-    // Se não estiver autenticado, redireciona para a página de login
     return <Navigate to="/login" replace />;
   }
 
   if (adminOnly && !isAdmin) {
-    // Se for apenas para admin e o usuário não for admin, redireciona para o dashboard normal ou home
     return <Navigate to="/dashboard" replace />;
   }
 
