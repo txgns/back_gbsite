@@ -44,17 +44,11 @@ const RegisterPage = () => {
 
     try {
       console.log('Tentando registrar usuário...');
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/register`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ 
-          username, 
-          email, 
-          password,
-          role: 'consumer' 
-        }),
+      const response = await api.post('/api/auth/register', { 
+        username, 
+        email, 
+        password,
+        role: 'consumer' 
       });
 
       if (!response.ok) {
