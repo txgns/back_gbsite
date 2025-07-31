@@ -10,9 +10,14 @@ export type Product = {
   description: string;
 };
 
-type CartItem = Product & {
+type CartItem = {
+  id: number; // Backend cart item ID
+  product_id: string;
+  product_name: string;
+  product_price: number;
   quantity: number;
-  cart_item_id?: number; // ID do item no carrinho no backend
+  added_at: string;
+  user_id: number;
 };
 
 type CartContextType = {
