@@ -319,7 +319,7 @@ def main():
         ("Get Cart", tester.test_get_cart),
         ("Create Order", tester.test_create_order),
         ("Get User Orders", tester.test_get_user_orders),
-        ("Admin Get All Orders", tester.test_admin_get_all_orders),
+        ("Admin Get All Users", tester.test_admin_get_all_orders),
         ("Admin Create Product", tester.test_admin_create_product),
         ("Admin Get Low Stock", tester.test_admin_get_low_stock),
         ("Clear Cart", tester.test_clear_cart),
