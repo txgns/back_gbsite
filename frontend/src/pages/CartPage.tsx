@@ -223,12 +223,12 @@ const CartPage = () => {
                           </Button>
                         </Link>
                       </div>
-                      <Link 
-                        to="/checkout"
-                        className="block w-full py-2 border border-white/20 text-white text-center rounded-md hover:bg-robotics-black-lighter transition-colors text-sm"
+                      <Button 
+                        onClick={handleCheckout}
+                        className="w-full py-2 border border-white/20 text-white bg-transparent hover:bg-robotics-black-lighter transition-colors text-sm"
                       >
-                        Continuar sem login
-                      </Link>
+                        Finalizar sem login
+                      </Button>
                     </div>
                   )}
                   
