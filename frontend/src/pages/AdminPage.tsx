@@ -209,6 +209,34 @@ const AdminPage: React.FC = () => {
   }, [activeTab, user]);
 
   // Handle actions
+  const updateUserRole = async (userId: number, newRole: string) => {
+    try {
+      const response = await fetch(`/api/admin/users/${userId}/role`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ role: newRole }),
+      });
+
+      if (response.ok) {
+        toast({
+          title: 'Role atualizada',
+          description: 'Role do usuário foi atualizada com sucesso.',
+        });
+        fetchUsers();
+      }
+    } catch (error) {
+      console.error('Error updating user role:', error);
+      toast({
+        title: 'Erro',
+        description: 'Não foi possível atualizar a role do usuário.',
+        variant: 'destructive',
+      });
+    }
+  };
+
   const updateOrderStatus = async (orderId: number, status: string) => {
     try {
       const response = await fetch(`/api/orders/${orderId}/status`, {
