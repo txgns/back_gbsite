@@ -4,6 +4,7 @@ import { Mail, Lock, LogIn, ArrowLeft } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
+import { api } from '@/lib/api';
 
 const LoginPage = () => {
   const [email, setEmail] = useState('');
