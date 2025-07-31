@@ -114,12 +114,20 @@ const StorePage = () => {
     setPriceRange([min, max]);
   };
 
-  const handleAddToCart = (product: Product) => {
-    addToCart(product);
-    toast({
-      title: "Produto adicionado!",
-      description: `${product.name} foi adicionado ao carrinho.`,
-    });
+  const handleAddToCart = async (product: Product) => {
+    try {
+      await addToCart(product);
+      toast({
+        title: "Produto adicionado!",
+        description: `${product.name} foi adicionado ao carrinho.`,
+      });
+    } catch (error: any) {
+      toast({
+        title: "Erro ao adicionar produto",
+        description: error.message || "Erro ao adicionar produto ao carrinho",
+        variant: "destructive",
+      });
+    }
   };
 
   if (isLoading) {
