@@ -462,7 +462,7 @@ const AdminPage: React.FC = () => {
                         </tr>
                       ) : filteredUsers.length === 0 ? (
                         <tr>
-                          <td colSpan={5} className="text-center p-8 text-white/70">
+                          <td colSpan={6} className="text-center p-8 text-white/70">
                             Nenhum usuário encontrado.
                           </td>
                         </tr>
