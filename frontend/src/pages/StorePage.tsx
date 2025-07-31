@@ -22,7 +22,7 @@ const StorePage = () => {
   const [maxPrice, setMaxPrice] = useState(300);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8001";
+  const API_URL = import.meta.env.VITE_API_URL || "";
 
   // Fetch products from backend
   useEffect(() => {
