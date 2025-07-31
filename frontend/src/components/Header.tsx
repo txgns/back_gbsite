@@ -1,179 +1,284 @@
 
-import React, { useState, useEffect } from 'react';
-import { cn } from '@/lib/utils';
-import { Menu, X, ShoppingCart } from 'lucide-react';
-import { Link, useLocation } from 'react-router-dom';
-import StoreContactModal from './StoreContactModal';
+import React, { useState } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Menu, X, ShoppingCart, User, LogOut, Settings, Package } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
+import { useCart } from '@/context/CartContext';
+import { Button } from '@/components/ui/button';
 
 const Header = () => {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const { isAuthenticated, user, logout } = useAuth();
+  const { totalItems } = useCart();
+  const navigate = useNavigate();
   const location = useLocation();
-  const [isScrolled, setIsScrolled] = useState(false);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [cartCount, setCartCount] = useState(0);
-  const [storeContactModalOpen, setStoreContactModalOpen] = useState(false);
 
-  // Determine page types once on component mount or when location changes
-  const isProjectDetailPage = location.pathname.includes('/project/');
-  const isStorePage = location.pathname.includes('/loja') || 
-                    location.pathname.includes('/product') || 
-                    location.pathname.includes('/cart') ||
-                    location.pathname.includes('/checkout');
-
-  useEffect(() => {
-    const handleScroll = () => {
-      if (window.scrollY > 20) {
-        setIsScrolled(true);
-      } else {
-        setIsScrolled(false);
-      }
-    };
-
-    // Only read cart from localStorage once on mount
-    const updateCartCount = () => {
-      const storedCart = localStorage.getItem('cart');
-      if (storedCart) {
-        try {
-          const cartItems = JSON.parse(storedCart);
-          setCartCount(cartItems.length);
-        } catch (e) {
-          console.error("Error parsing cart data:", e);
-          setCartCount(0);
-        }
-      } else {
-        setCartCount(0);
-      }
-    };
-
-    // Initial cart update
-    updateCartCount();
-
-    const handleCartUpdate = () => {
-      updateCartCount();
-    };
-
-    window.addEventListener('scroll', handleScroll);
-    window.addEventListener('cartUpdated', handleCartUpdate);
-    
-    return () => {
-      window.removeEventListener('scroll', handleScroll);
-      window.removeEventListener('cartUpdated', handleCartUpdate);
-    };
-  }, []);  // Empty dependency array to run only once on mount
-
-  const toggleMobileMenu = () => {
-    setMobileMenuOpen(!mobileMenuOpen);
+  const handleLogout = () => {
+    logout();
+    setIsUserMenuOpen(false);
+    navigate('/');
   };
 
-  // Conditionally show navigation items based on whether we're on a store or project page
-  const navigationItems = isProjectDetailPage
-    ? [] // Empty array for project detail pages - show only store and cart
-    : isStorePage 
-      ? [] // Empty array for store pages
-      : [
-          { name: 'Início', link: isStorePage ? '/#home' : '#home' },
-          { name: 'Equipe', link: isStorePage ? '/#team' : '#team' },
-          { name: 'Projetos', link: isStorePage ? '/#projects' : '#projects' },
-          { name: 'Patrocinadores', link: isStorePage ? '/#sponsors' : '#sponsors' }
-        ];
+  const handleLogin = () => {
+    navigate('/login');
+    setIsMenuOpen(false);
+  };
+
+  const isHomePage = location.pathname === '/';
 
   return (
-    <>
-      <header className={cn(
-        "fixed top-0 left-0 right-0 w-full py-4 px-6 md:px-12 z-50 transition-all duration-300",
-        isScrolled ? "bg-robotics-black/90 backdrop-blur-md shadow-md" : "bg-transparent"
-      )}>
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div className="flex items-center">
-            <Link to="/">
-              <svg xmlns="http://www.w3.org/2000/svg" width="45" height="45" viewBox="0 0 32 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-bot">
-                <path d="M12 8V4H8"/>
-                <rect width="16" height="12" x="4" y="8" rx="2"/>
-                <path d="M2 14h2"/>
-                <path d="M20 14h2"/>
-                <path d="M15 13v2"/>
-                <path d="M9 13v2"/>
-              </svg>
-            </Link>
-            <h1 className="text-2xl font-bold text-gradient"> GAMBIARRA ROBOTICS</h1>
-          </div>
+    <header className="fixed top-0 left-0 right-0 z-50 bg-robotics-black/95 backdrop-blur-sm border-b border-white/10">
+      <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-16">
+          {/* Logo */}
+          <Link to="/" className="flex items-center space-x-2">
+            <div className="w-8 h-8 bg-gradient-to-br from-robotics-purple to-robotics-purple-light rounded-lg flex items-center justify-center">
+              <span className="text-white font-bold text-lg">G</span>
+            </div>
+            <span className="text-white font-bold text-xl">GBSite</span>
+          </Link>
 
-          <nav className="hidden md:flex items-center space-x-8">
-            {navigationItems.map((item) => (
-              <a 
-                key={item.name} 
-                href={item.link} 
-                className="nav-link text-white/90 hover:text-white text-sm font-medium tracking-wide transition-colors"
-              >
-                {item.name}
-              </a>
-            ))}
-            {/* Always show the store link */}
+          {/* Desktop Navigation */}
+          <div className="hidden md:flex items-center space-x-8">
+            <Link 
+              to="/" 
+              className={`text-white/80 hover:text-white transition-colors ${isHomePage ? 'text-robotics-purple' : ''}`}
+            >
+              Início
+            </Link>
             <Link 
               to="/loja" 
-              className="nav-link text-white/90 hover:text-white text-sm font-medium tracking-wide transition-colors"
+              className={`text-white/80 hover:text-white transition-colors ${location.pathname === '/loja' ? 'text-robotics-purple' : ''}`}
             >
               Loja
             </Link>
-            <Link to="/cart" className="relative">
-              <ShoppingCart className="text-white hover:text-robotics-purple-light transition-colors" />
-              {cartCount > 0 && (
-                <span className="absolute -top-2 -right-2 bg-robotics-purple text-white text-xs w-5 h-5 flex items-center justify-center rounded-full">
-                  {cartCount}
-                </span>
-              )}
-            </Link>
-          </nav>
-
-          <div className="md:hidden flex items-center gap-4">
-            <Link to="/cart" className="relative">
-              <ShoppingCart className="text-white hover:text-robotics-purple-light transition-colors" />
-              {cartCount > 0 && (
-                <span className="absolute -top-2 -right-2 bg-robotics-purple text-white text-xs w-5 h-5 flex items-center justify-center rounded-full">
-                  {cartCount}
-                </span>
-              )}
-            </Link>
-            <button 
-              className="text-white p-2" 
-              onClick={toggleMobileMenu}
-              aria-label="Alternar menu"
+            <Link 
+              to="/sobre" 
+              className="text-white/80 hover:text-white transition-colors"
             >
-              {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+              Sobre
+            </Link>
+            <Link 
+              to="/contato" 
+              className="text-white/80 hover:text-white transition-colors"
+            >
+              Contato
+            </Link>
+          </div>
+
+          {/* Right side - Auth + Cart */}
+          <div className="flex items-center space-x-4">
+            {/* Cart Icon with Counter */}
+            {isAuthenticated && (
+              <Link to="/cart" className="relative p-2 text-white/80 hover:text-white transition-colors">
+                <ShoppingCart size={20} />
+                {totalItems > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-robotics-purple text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
+                    {totalItems > 99 ? '99+' : totalItems}
+                  </span>
+                )}
+              </Link>
+            )}
+
+            {/* User Menu or Login Button */}
+            {isAuthenticated && user ? (
+              <div className="relative">
+                <button
+                  onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+                  className="flex items-center space-x-2 p-2 text-white/80 hover:text-white transition-colors"
+                >
+                  <div className="w-8 h-8 bg-gradient-to-br from-robotics-purple to-robotics-purple-light rounded-full flex items-center justify-center">
+                    {user.avatar_url ? (
+                      <img 
+                        src={user.avatar_url} 
+                        alt={user.username}
+                        className="w-8 h-8 rounded-full object-cover"
+                      />
+                    ) : (
+                      <User size={16} />
+                    )}
+                  </div>
+                  <span className="hidden sm:block text-sm font-medium">
+                    {user.username}
+                  </span>
+                </button>
+
+                {/* User Dropdown Menu */}
+                {isUserMenuOpen && (
+                  <div className="absolute right-0 mt-2 w-48 bg-robotics-black-light border border-white/10 rounded-md shadow-lg py-1 z-50">
+                    <div className="px-4 py-2 border-b border-white/10">
+                      <p className="text-sm font-medium text-white">{user.username}</p>
+                      <p className="text-xs text-white/60">{user.email}</p>
+                      <span className={`inline-block text-xs px-2 py-1 rounded-full mt-1 ${
+                        user.role === 'admin' 
+                          ? 'bg-robotics-purple text-white' 
+                          : 'bg-gray-600 text-white'
+                      }`}>
+                        {user.role === 'admin' ? 'Administrador' : 'Cliente'}
+                      </span>
+                    </div>
+                    
+                    <Link
+                      to="/dashboard"
+                      onClick={() => setIsUserMenuOpen(false)}
+                      className="flex items-center px-4 py-2 text-sm text-white/80 hover:text-white hover:bg-robotics-black-lighter transition-colors"
+                    >
+                      <User size={16} className="mr-2" />
+                      Meu Perfil
+                    </Link>
+
+                    <Link
+                      to="/cart"
+                      onClick={() => setIsUserMenuOpen(false)}
+                      className="flex items-center px-4 py-2 text-sm text-white/80 hover:text-white hover:bg-robotics-black-lighter transition-colors"
+                    >
+                      <ShoppingCart size={16} className="mr-2" />
+                      Meu Carrinho ({totalItems})
+                    </Link>
+
+                    <Link
+                      to="/orders"
+                      onClick={() => setIsUserMenuOpen(false)}
+                      className="flex items-center px-4 py-2 text-sm text-white/80 hover:text-white hover:bg-robotics-black-lighter transition-colors"
+                    >
+                      <Package size={16} className="mr-2" />
+                      Meus Pedidos
+                    </Link>
+
+                    {user.role === 'admin' && (
+                      <>
+                        <div className="border-t border-white/10 my-1"></div>
+                        <Link
+                          to="/admin"
+                          onClick={() => setIsUserMenuOpen(false)}
+                          className="flex items-center px-4 py-2 text-sm text-robotics-purple hover:text-robotics-purple-light hover:bg-robotics-black-lighter transition-colors"
+                        >
+                          <Settings size={16} className="mr-2" />
+                          Painel Admin
+                        </Link>
+                      </>
+                    )}
+
+                    <div className="border-t border-white/10 my-1"></div>
+                    <button
+                      onClick={handleLogout}
+                      className="flex items-center w-full px-4 py-2 text-sm text-red-400 hover:text-red-300 hover:bg-robotics-black-lighter transition-colors"
+                    >
+                      <LogOut size={16} className="mr-2" />
+                      Sair
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="flex items-center space-x-2">
+                <Button
+                  onClick={handleLogin}
+                  variant="outline"
+                  size="sm"
+                  className="text-white/80 hover:text-white border-white/20 hover:bg-white/10"
+                >
+                  Entrar
+                </Button>
+                <Link to="/register">
+                  <Button
+                    size="sm"
+                    className="bg-gradient-to-r from-robotics-purple to-robotics-purple-light hover:from-robotics-purple-light hover:to-robotics-purple"
+                  >
+                    Registrar
+                  </Button>
+                </Link>
+              </div>
+            )}
+
+            {/* Mobile menu button */}
+            <button
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              className="md:hidden p-2 text-white/80 hover:text-white transition-colors"
+            >
+              {isMenuOpen ? <X size={20} /> : <Menu size={20} />}
             </button>
           </div>
         </div>
 
-        {mobileMenuOpen && (
-          <div className="md:hidden fixed inset-0 top-[72px] bg-robotics-black/95 backdrop-blur-md z-40 flex flex-col items-center pt-12">
-            <div className="flex flex-col items-center space-y-8">
-              {navigationItems.map((item) => (
-                <a 
-                  key={item.name} 
-                  href={item.link} 
-                  className="text-white text-2xl font-medium"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  {item.name}
-                </a>
-              ))}
+        {/* Mobile Navigation Menu */}
+        {isMenuOpen && (
+          <div className="md:hidden border-t border-white/10 py-4">
+            <div className="flex flex-col space-y-4">
+              <Link 
+                to="/" 
+                onClick={() => setIsMenuOpen(false)}
+                className={`text-white/80 hover:text-white transition-colors ${isHomePage ? 'text-robotics-purple' : ''}`}
+              >
+                Início
+              </Link>
               <Link 
                 to="/loja" 
-                className="text-white text-2xl font-medium"
-                onClick={() => setMobileMenuOpen(false)}
+                onClick={() => setIsMenuOpen(false)}
+                className={`text-white/80 hover:text-white transition-colors ${location.pathname === '/loja' ? 'text-robotics-purple' : ''}`}
               >
                 Loja
               </Link>
+              <Link 
+                to="/sobre" 
+                onClick={() => setIsMenuOpen(false)}
+                className="text-white/80 hover:text-white transition-colors"
+              >
+                Sobre
+              </Link>
+              <Link 
+                to="/contato" 
+                onClick={() => setIsMenuOpen(false)}
+                className="text-white/80 hover:text-white transition-colors"
+              >
+                Contato
+              </Link>
+              
+              {isAuthenticated && (
+                <>
+                  <div className="border-t border-white/10 my-2"></div>
+                  <Link 
+                    to="/cart" 
+                    onClick={() => setIsMenuOpen(false)}
+                    className="text-white/80 hover:text-white transition-colors"
+                  >
+                    Carrinho ({totalItems})
+                  </Link>
+                  <Link 
+                    to="/dashboard" 
+                    onClick={() => setIsMenuOpen(false)}
+                    className="text-white/80 hover:text-white transition-colors"
+                  >
+                    Meu Perfil
+                  </Link>
+                  {user?.role === 'admin' && (
+                    <Link 
+                      to="/admin" 
+                      onClick={() => setIsMenuOpen(false)}
+                      className="text-robotics-purple hover:text-robotics-purple-light transition-colors"
+                    >
+                      Painel Admin
+                    </Link>
+                  )}
+                </>
+              )}
             </div>
           </div>
         )}
-      </header>
-      
-      {/* Store Contact Modal */}
-      <StoreContactModal 
-        open={storeContactModalOpen} 
-        onOpenChange={setStoreContactModalOpen} 
-      />
-    </>
+      </nav>
+
+      {/* Overlay for dropdown menus */}
+      {(isUserMenuOpen || isMenuOpen) && (
+        <div 
+          className="fixed inset-0 z-40 bg-black/20"
+          onClick={() => {
+            setIsUserMenuOpen(false);
+            setIsMenuOpen(false);
+          }}
+        ></div>
+      )}
+    </header>
   );
 };
 
