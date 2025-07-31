@@ -149,7 +149,7 @@ const DashboardPage: React.FC = () => {
                   <p className="text-2xl font-bold text-white">{orders.length}</p>
                 </div>
               </div>
-            </Card>
+            </CardContent>
           </Card>
 
           <Card className="bg-robotics-black-light border-white/10">
