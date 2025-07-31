@@ -5,7 +5,7 @@ from datetime import timedelta
 from database import get_db
 from models.user import User
 from schemas.user import UserCreate, UserLogin, Token, UserResponse
-from auth import verify_password, get_password_hash, create_access_token, ACCESS_TOKEN_EXPIRE_MINUTES
+from auth import verify_password, get_password_hash, create_access_token, ACCESS_TOKEN_EXPIRE_MINUTES, get_current_user
 
 router = APIRouter()
 
@@ -74,8 +74,5 @@ def login_user(user_credentials: UserLogin, db: Session = Depends(get_db)):
     }
 
 @router.get("/me", response_model=UserResponse)
-def get_current_user_info(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+def get_current_user_info(current_user: User = Depends(get_current_user)):
     return UserResponse.from_orm(current_user)
-
-# Import get_current_user here to avoid circular import
-from auth import get_current_user
