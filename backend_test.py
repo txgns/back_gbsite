@@ -280,7 +280,7 @@ class GBSiteAPITester:
         success, response = self.run_test(
             "Admin Get Low Stock",
             "GET",
-            "products/low-stock?threshold=20",
+            "products/low-stock/list?threshold=20",
             200,
             use_admin=True
         )
