@@ -73,6 +73,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setUser(null);
       console.log("AuthContext: Nenhum token encontrado no localStorage.");
     }
+    
+    setIsLoading(false); // Auth check complete
   }, []); // Array de dependências vazio para rodar apenas uma vez na montagem
 
   const login = (token: string, userData?: any) => {
