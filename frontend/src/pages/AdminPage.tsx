@@ -483,6 +483,17 @@ const AdminPage: React.FC = () => {
                             <td className="p-4 text-white/70">
                               {new Date(user.created_at).toLocaleDateString('pt-BR')}
                             </td>
+                            <td className="p-4">
+                              <select
+                                value={user.role}
+                                onChange={(e) => updateUserRole(user.id, e.target.value)}
+                                className="bg-robotics-black border border-white/20 text-white rounded px-2 py-1 text-sm"
+                                disabled={user.id === user?.id} // Prevent admin from changing their own role
+                              >
+                                <option value="consumer">Cliente</option>
+                                <option value="admin">Administrador</option>
+                              </select>
+                            </td>
                           </tr>
                         ))
                       )}
