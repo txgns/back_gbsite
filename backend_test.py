@@ -305,7 +305,7 @@ def main():
     print("=" * 50)
     
     # Setup
-    tester = GBSiteAPITester("http://localhost:8001")
+    tester = GBSiteAPITester("http://127.0.0.1:8001")
     
     # Test sequence
     tests = [
