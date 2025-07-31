@@ -20,6 +20,7 @@ const DashboardPage: React.FC = () => {
   const navigate = useNavigate();
   const [orders, setOrders] = useState<Order[]>([]);
   const { totalItems, totalPrice } = useCart();
+  const { toast } = useToast();
 
   useEffect(() => {
     if (!isAuthenticated) {
