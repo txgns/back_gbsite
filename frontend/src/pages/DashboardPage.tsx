@@ -27,8 +27,9 @@ const DashboardPage: React.FC = () => {
   useEffect(() => {
     const fetchOrders = async () => {
       if (user && user.id) {
+        const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8001";
         try {
-          const response = await fetch(`http://localhost:5000/api/user/orders/${user.id}`, {
+          const response = await fetch(`${API_URL}/api/user/orders/${user.id}`, {
             headers: {
               Authorization: `Bearer ${localStorage.getItem('token')}`,
             },
