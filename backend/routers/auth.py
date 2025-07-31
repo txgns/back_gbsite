@@ -42,7 +42,16 @@ def register_user(user: UserCreate, db: Session = Depends(get_db)):
     # Create access token
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(
-        data={"sub": str(db_user.id)}, expires_delta=access_token_expires
+        data={
+            "sub": str(db_user.id),
+            "id": db_user.id,
+            "username": db_user.username,
+            "email": db_user.email,
+            "role": db_user.role,
+            "avatar_url": db_user.avatar_url,
+            "created_at": db_user.created_at.isoformat() if db_user.created_at else None
+        }, 
+        expires_delta=access_token_expires
     )
     
     return {
