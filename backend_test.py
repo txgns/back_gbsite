@@ -151,7 +151,7 @@ class GBSiteAPITester:
         success, response = self.run_test(
             "Get Product Categories",
             "GET",
-            "products/categories",
+            "products/categories/list",
             200
         )
         
