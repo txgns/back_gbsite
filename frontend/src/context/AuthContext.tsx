@@ -24,17 +24,33 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (storedToken) {
       try {
         const decodedToken = jwtDecode(storedToken);
-        // Verifica se o token não expirou
-        if (decodedToken.exp * 1000 > Date.now()) {
+        // Verifica se o token não expirou (adiciona 5 minutos de margem)
+        const now = Date.now();
+        const expirationTime = decodedToken.exp * 1000;
+        const isExpired = now >= (expirationTime - 5 * 60 * 1000); // 5 min antes da expiração
+        
+        console.log("Token expires at:", new Date(expirationTime));
+        console.log("Current time:", new Date(now));
+        console.log("Is expired:", isExpired);
+        
+        if (!isExpired) {
           setToken(storedToken);
           
           // Usa os dados do usuário salvos se disponíveis, senão decodifica do token
           if (storedUser) {
-            const userData = JSON.parse(storedUser);
-            setUser(userData);
-            console.log("AuthContext: Dados do usuário recuperados do localStorage:", userData);
+            try {
+              const userData = JSON.parse(storedUser);
+              setUser(userData);
+              console.log("AuthContext: Dados do usuário recuperados do localStorage:", userData);
+            } catch (parseError) {
+              console.error("Error parsing stored user data:", parseError);
+              // Se houver erro ao parsear, use os dados do token
+              setUser(decodedToken);
+              localStorage.setItem("user", JSON.stringify(decodedToken));
+            }
           } else {
             setUser(decodedToken);
+            localStorage.setItem("user", JSON.stringify(decodedToken));
             console.log("AuthContext: Token decodificado. Usuário:", decodedToken);
           }
         } else {
