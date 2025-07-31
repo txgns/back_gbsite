@@ -5,7 +5,7 @@ from typing import List
 from database import get_db
 from models.user import User
 from schemas.user import UserResponse, UserUpdate
-from auth import get_current_user
+from auth import get_current_user, verify_password, get_password_hash
 
 router = APIRouter()
 
@@ -13,7 +13,7 @@ router = APIRouter()
 def get_user_profile(current_user: User = Depends(get_current_user)):
     return UserResponse.from_orm(current_user)
 
-@router.put("/profile", response_model=UserResponse)
+@router.put("/profile")
 def update_user_profile(
     user_update: UserUpdate,
     db: Session = Depends(get_db),
@@ -45,6 +45,22 @@ def update_user_profile(
             )
         current_user.email = user_update.email
     
+    # Update password if provided
+    if user_update.new_password:
+        if not user_update.current_password:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Current password is required to change password"
+            )
+        
+        if not verify_password(user_update.current_password, current_user.password_hash):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Current password is incorrect"
+            )
+        
+        current_user.password_hash = get_password_hash(user_update.new_password)
+    
     # Update avatar URL
     if user_update.avatar_url is not None:  # Allow empty string to remove avatar
         current_user.avatar_url = user_update.avatar_url
@@ -52,4 +68,7 @@ def update_user_profile(
     db.commit()
     db.refresh(current_user)
     
-    return UserResponse.from_orm(current_user)
+    return {
+        "message": "Profile updated successfully",
+        "user": UserResponse.from_orm(current_user)
+    }

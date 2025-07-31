@@ -13,30 +13,41 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [token, setToken] = useState<string | null>(localStorage.getItem('token'));
+  const [token, setToken] = useState<string | null>(null);
   const [user, setUser] = useState<any | null>(null);
 
   useEffect(() => {
     const storedToken = localStorage.getItem("token");
+    const storedUser = localStorage.getItem("user");
     console.log("AuthContext: useEffect disparado. Token no localStorage:", storedToken);
 
     if (storedToken) {
       try {
-        const decodedUser = jwtDecode(storedToken);
+        const decodedToken = jwtDecode(storedToken);
         // Verifica se o token não expirou
-        if (decodedUser.exp * 1000 > Date.now()) {
+        if (decodedToken.exp * 1000 > Date.now()) {
           setToken(storedToken);
-          setUser(decodedUser);
-          console.log("AuthContext: Token válido e decodificado. Usuário:", decodedUser);
+          
+          // Usa os dados do usuário salvos se disponíveis, senão decodifica do token
+          if (storedUser) {
+            const userData = JSON.parse(storedUser);
+            setUser(userData);
+            console.log("AuthContext: Dados do usuário recuperados do localStorage:", userData);
+          } else {
+            setUser(decodedToken);
+            console.log("AuthContext: Token decodificado. Usuário:", decodedToken);
+          }
         } else {
           console.log("AuthContext: Token expirado. Removendo do localStorage.");
           localStorage.removeItem("token");
+          localStorage.removeItem("user");
           setToken(null);
           setUser(null);
         }
       } catch (error) {
         console.error("AuthContext: Falha ao decodificar token ou token inválido:", error);
         localStorage.removeItem("token");
+        localStorage.removeItem("user");
         setToken(null);
         setUser(null);
       }
@@ -53,12 +64,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setToken(token);
     
     if (userData) {
-      // Use user data from login response
+      // Use user data from login response and save to localStorage
+      localStorage.setItem("user", JSON.stringify(userData));
       setUser(userData);
       console.log("AuthContext: User data from login:", userData);
     } else {
       try {
         const decodedUser = jwtDecode(token);
+        localStorage.setItem("user", JSON.stringify(decodedUser));
         setUser(decodedUser);
         console.log("AuthContext: Token decodificado. Usuário:", decodedUser);
       } catch (error) {
@@ -69,7 +82,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const logout = () => {
     localStorage.removeItem('token');
+    localStorage.removeItem('user');
     setToken(null);
+    setUser(null);
   };
 
   const isAuthenticated = !!token;

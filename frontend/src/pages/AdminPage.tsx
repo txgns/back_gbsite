@@ -209,6 +209,34 @@ const AdminPage: React.FC = () => {
   }, [activeTab, user]);
 
   // Handle actions
+  const updateUserRole = async (userId: number, newRole: string) => {
+    try {
+      const response = await fetch(`/api/admin/users/${userId}/role`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ role: newRole }),
+      });
+
+      if (response.ok) {
+        toast({
+          title: 'Role atualizada',
+          description: 'Role do usuário foi atualizada com sucesso.',
+        });
+        fetchUsers();
+      }
+    } catch (error) {
+      console.error('Error updating user role:', error);
+      toast({
+        title: 'Erro',
+        description: 'Não foi possível atualizar a role do usuário.',
+        variant: 'destructive',
+      });
+    }
+  };
+
   const updateOrderStatus = async (orderId: number, status: string) => {
     try {
       const response = await fetch(`/api/orders/${orderId}/status`, {
@@ -422,18 +450,19 @@ const AdminPage: React.FC = () => {
                         <th className="text-left p-4 text-white/70 font-medium">Email</th>
                         <th className="text-left p-4 text-white/70 font-medium">Função</th>
                         <th className="text-left p-4 text-white/70 font-medium">Data de Criação</th>
+                        <th className="text-left p-4 text-white/70 font-medium">Ações</th>
                       </tr>
                     </thead>
                     <tbody>
                       {loading ? (
                         <tr>
-                          <td colSpan={5} className="text-center p-8 text-white/70">
+                          <td colSpan={6} className="text-center p-8 text-white/70">
                             Carregando usuários...
                           </td>
                         </tr>
                       ) : filteredUsers.length === 0 ? (
                         <tr>
-                          <td colSpan={5} className="text-center p-8 text-white/70">
+                          <td colSpan={6} className="text-center p-8 text-white/70">
                             Nenhum usuário encontrado.
                           </td>
                         </tr>
@@ -453,6 +482,17 @@ const AdminPage: React.FC = () => {
                             </td>
                             <td className="p-4 text-white/70">
                               {new Date(user.created_at).toLocaleDateString('pt-BR')}
+                            </td>
+                            <td className="p-4">
+                              <select
+                                value={user.role}
+                                onChange={(e) => updateUserRole(user.id, e.target.value)}
+                                className="bg-robotics-black border border-white/20 text-white rounded px-2 py-1 text-sm"
+                                disabled={user.id === user?.id} // Prevent admin from changing their own role
+                              >
+                                <option value="consumer">Cliente</option>
+                                <option value="admin">Administrador</option>
+                              </select>
                             </td>
                           </tr>
                         ))

@@ -15,6 +15,7 @@ import ProjectDetailPage from "./pages/ProjectDetailPage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import DashboardPage from "./pages/DashboardPage";
+import EditProfilePage from "./pages/EditProfilePage";
 import AdminPage from "./pages/AdminPage";
 import AdminDashboardPage from "./pages/AdminDashboardPage";
 import AdminOrdersPage from "./pages/AdminOrdersPage";
@@ -46,6 +47,7 @@ const App = () => (
               {/* Rotas Protegidas */}
               <Route element={<ProtectedRoute />}>
                 <Route path="/dashboard" element={<DashboardPage />} />
+                <Route path="/profile/edit" element={<EditProfilePage />} />
               </Route>
 
               {/* Rotas Protegidas para Admin */}

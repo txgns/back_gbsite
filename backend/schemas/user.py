@@ -15,6 +15,8 @@ class UserUpdate(BaseModel):
     username: Optional[str] = None
     email: Optional[str] = None
     avatar_url: Optional[str] = None
+    current_password: Optional[str] = None
+    new_password: Optional[str] = None
 
 class UserResponse(UserBase):
     id: int
