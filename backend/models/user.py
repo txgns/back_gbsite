@@ -11,6 +11,7 @@ class User(Base):
     email = Column(String(120), unique=True, index=True, nullable=False)
     password_hash = Column(String(128), nullable=False)
     role = Column(String(20), nullable=False, default="consumer")  # admin or consumer
+    avatar_url = Column(String(500), nullable=True)  # URL for user avatar image
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     
     # Relationships
