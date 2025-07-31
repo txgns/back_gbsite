@@ -159,20 +159,24 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const clearCart = async () => {
     if (!isAuthenticated || !token) return;
+
     try {
-      const response = await fetch(`${API_URL}/api/cart/clear`, {
-        method: "DELETE",
+      console.log('Clearing cart...');
+      const response = await fetch('/api/cart/clear', {
+        method: 'DELETE',
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
+
       if (response.ok) {
-        await fetchCart(); // Refresh cart after clearing
+        console.log('Cart cleared successfully');
+        await fetchCart();
       } else {
-        console.error("Failed to clear cart:", response.statusText);
+        console.error('Failed to clear cart:', response.statusText);
       }
     } catch (error) {
-      console.error("Error clearing cart:", error);
+      console.error('Error clearing cart:', error);
     }
   };
 
