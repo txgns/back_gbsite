@@ -49,7 +49,8 @@ const App = () => (
 
               {/* Rotas Protegidas para Admin */}
               <Route element={<ProtectedRoute adminOnly />}>
-                <Route path="/admin" element={<AdminDashboardPage />} />
+                <Route path="/admin" element={<AdminPage />} />
+                <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
                 <Route path="/admin/orders" element={<AdminOrdersPage />} />
                 <Route path="/admin/stock" element={<AdminStockPage />} />
               </Route>
