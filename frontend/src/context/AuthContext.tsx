@@ -47,9 +47,24 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   }, []); // Array de dependências vazio para rodar apenas uma vez na montagem
 
-  const login = (newToken: string) => {
-    localStorage.setItem('token', newToken);
-    setToken(newToken);
+  const login = (token: string, userData?: any) => {
+    console.log("AuthContext: Fazendo login. Token:", token);
+    localStorage.setItem("token", token);
+    setToken(token);
+    
+    if (userData) {
+      // Use user data from login response
+      setUser(userData);
+      console.log("AuthContext: User data from login:", userData);
+    } else {
+      try {
+        const decodedUser = jwtDecode(token);
+        setUser(decodedUser);
+        console.log("AuthContext: Token decodificado. Usuário:", decodedUser);
+      } catch (error) {
+        console.error("Erro ao decodificar token:", error);
+      }
+    }
   };
 
   const logout = () => {
