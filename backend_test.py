@@ -4,7 +4,7 @@ import json
 from datetime import datetime
 
 class GBSiteAPITester:
-    def __init__(self, base_url="http://localhost:8001"):
+    def __init__(self, base_url="http://127.0.0.1:8001"):
         self.base_url = base_url
         self.token = None
         self.admin_token = None
