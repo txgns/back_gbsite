@@ -40,33 +40,31 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const fetchCart = async () => {
     if (!isAuthenticated || !token) {
+      console.log('User not authenticated, clearing cart');
       setCart([]);
       return;
     }
+
     try {
-      const response = await fetch(`${API_URL}/api/cart/`, {
+      console.log('Fetching cart data...');
+      const response = await fetch('/api/cart/', {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
+
       if (response.ok) {
         const data = await response.json();
-        setCart(data.cart_items.map((item: any) => ({
-          id: item.product_id,
-          name: item.product_name,
-          price: item.product_price,
-          quantity: item.quantity,
-          cart_item_id: item.id, // Store the backend cart item ID
-          image: item.image_url || '', // Assuming image_url might come from backend
-          category: item.category || '',
-          description: item.description || '',
-        })));
+        console.log('Cart data received:', data);
+        setCart(data.cart_items || []);
       } else {
-        console.error("Failed to fetch cart:", response.statusText);
+        console.error('Failed to fetch cart:', response.status, response.statusText);
+        const errorData = await response.json().catch(() => ({}));
+        console.error('Error details:', errorData);
         setCart([]);
       }
     } catch (error) {
-      console.error("Error fetching cart:", error);
+      console.error('Error fetching cart:', error);
       setCart([]);
     }
   };
