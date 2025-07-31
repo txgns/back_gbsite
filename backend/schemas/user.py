@@ -1,0 +1,56 @@
+from pydantic import BaseModel, EmailStr
+from typing import Optional, List
+from datetime import datetime
+
+class UserBase(BaseModel):
+    username: str
+    email: EmailStr
+    role: Optional[str] = "consumer"
+
+class UserCreate(UserBase):
+    password: str
+
+class UserUpdate(BaseModel):
+    username: Optional[str] = None
+    email: Optional[EmailStr] = None
+
+class UserResponse(UserBase):
+    id: int
+    created_at: datetime
+    
+    class Config:
+        from_attributes = True
+
+class UserLogin(BaseModel):
+    email: EmailStr
+    password: str
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+    user: UserResponse
+
+class CartItemBase(BaseModel):
+    product_id: str
+    product_name: str
+    product_price: float
+    quantity: int = 1
+
+class CartItemCreate(CartItemBase):
+    pass
+
+class CartItemUpdate(BaseModel):
+    quantity: int
+
+class CartItemResponse(CartItemBase):
+    id: int
+    user_id: int
+    added_at: datetime
+    
+    class Config:
+        from_attributes = True
+
+class CartResponse(BaseModel):
+    cart_items: List[CartItemResponse]
+    total_items: int
+    total_amount: float
