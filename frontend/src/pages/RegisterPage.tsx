@@ -33,7 +33,7 @@ const RegisterPage: React.FC = () => {
       }
 
       const data = await response.json();
-      login(data.access_token);
+      login(data.access_token, data.user);
       toast({
         title: 'Registro bem-sucedido!',
         description: 'Sua conta foi criada com sucesso.',
