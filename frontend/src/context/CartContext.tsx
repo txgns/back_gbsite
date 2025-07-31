@@ -111,20 +111,24 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const removeFromCart = async (cartItemId: number) => {
     if (!isAuthenticated || !token) return;
+
     try {
-      const response = await fetch(`${API_URL}/api/cart/remove/${cartItemId}`, {
-        method: "DELETE",
+      console.log('Removing item from cart:', cartItemId);
+      const response = await fetch(`/api/cart/remove/${cartItemId}`, {
+        method: 'DELETE',
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
+
       if (response.ok) {
-        await fetchCart(); // Refresh cart after removing
+        console.log('Item removed successfully');
+        await fetchCart();
       } else {
-        console.error("Failed to remove from cart:", response.statusText);
+        console.error('Failed to remove item:', response.statusText);
       }
     } catch (error) {
-      console.error("Error removing from cart:", error);
+      console.error('Error removing from cart:', error);
     }
   };
 
