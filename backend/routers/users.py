@@ -5,7 +5,7 @@ from typing import List
 from database import get_db
 from models.user import User
 from schemas.user import UserResponse, UserUpdate
-from auth import get_current_user
+from auth import get_current_user, verify_password, get_password_hash
 
 router = APIRouter()
 
