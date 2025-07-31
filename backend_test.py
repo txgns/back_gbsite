@@ -396,6 +396,9 @@ def main():
         ("Admin Create Product", tester.test_admin_create_product),
         ("Admin Get Low Stock", tester.test_admin_get_low_stock),
         ("Admin Get Stats", tester.test_admin_get_stats),
+        ("Invalid Login", tester.test_invalid_login),
+        ("Unauthorized Access", tester.test_unauthorized_access),
+        ("Duplicate Product Creation", tester.test_duplicate_product_creation),
         ("Clear Cart", tester.test_clear_cart),
     ]
     
