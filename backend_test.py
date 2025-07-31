@@ -307,6 +307,62 @@ class GBSiteAPITester:
             return True
         return False
 
+    def test_invalid_login(self):
+        """Test login with invalid credentials"""
+        invalid_data = {
+            "email": "invalid@test.com",
+            "password": "wrongpassword"
+        }
+        
+        success, response = self.run_test(
+            "Invalid Login",
+            "POST",
+            "auth/login",
+            401,
+            data=invalid_data
+        )
+        return success
+
+    def test_unauthorized_access(self):
+        """Test accessing protected endpoint without token"""
+        # Temporarily remove token
+        temp_token = self.token
+        self.token = None
+        
+        success, response = self.run_test(
+            "Unauthorized Access",
+            "GET",
+            "auth/me",
+            401
+        )
+        
+        # Restore token
+        self.token = temp_token
+        return success
+
+    def test_duplicate_product_creation(self):
+        """Test creating product with duplicate ID"""
+        product_data = {
+            "id": "arduino-uno",  # This ID already exists
+            "name": "Duplicate Arduino",
+            "description": "This should fail",
+            "price": 99.99,
+            "stock_quantity": 10,
+            "category": "Test",
+            "image_url": "test.jpg",
+            "is_active": True
+        }
+        
+        success, response = self.run_test(
+            "Duplicate Product Creation",
+            "POST",
+            "products/",
+            400,
+            data=product_data,
+            use_admin=True
+        )
+        return success
+
     def test_clear_cart(self):
         """Test clearing cart"""
         success, response = self.run_test(
