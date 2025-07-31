@@ -196,11 +196,11 @@ const DashboardPage: React.FC = () => {
                   </span>
                 </div>
               </div>
-              <div className="flex gap-2">
-                <Link to="/profile/edit">
+              <div className="flex gap-2 mt-6">
+                <Link to="/profile/edit" className="flex-1">
                   <Button 
                     variant="outline" 
-                    className="flex-1 gap-2 text-white/80 hover:text-white border-white/20 hover:bg-robotics-black-lighter"
+                    className="w-full gap-2 text-white/80 hover:text-white border-white/20 hover:bg-robotics-black-lighter"
                   >
                     <Edit size={16} />
                     Editar Perfil
