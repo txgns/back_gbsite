@@ -44,11 +44,17 @@ const RegisterPage = () => {
 
     try {
       console.log('Tentando registrar usuário...');
-      const response = await api.post('/api/auth/register', { 
-        username, 
-        email, 
-        password,
-        role: 'consumer' 
+      const response = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          username, 
+          email, 
+          password,
+          role: 'consumer' 
+        }),
       });
 
       if (!response.ok) {
