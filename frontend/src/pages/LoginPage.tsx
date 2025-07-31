@@ -17,7 +17,7 @@ const LoginPage: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-    const API_URL = import.meta.env.VITE_API_URL || "";
+    const API_URL = import.meta.env.VITE_API_URL || "http://127.0.0.1:8001";
 
       const response = await fetch(`${API_URL}/api/auth/login`, {
         method: 'POST',
