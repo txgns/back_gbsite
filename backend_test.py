@@ -373,6 +373,217 @@ class GBSiteAPITester:
         )
         return success
 
+    def test_admin_change_user_role(self):
+        """Test admin changing user role"""
+        if not self.user_id:
+            print("❌ No regular user ID available for role change test")
+            return False
+            
+        # Change user role from consumer to admin
+        role_data = {"role": "admin"}
+        success, response = self.run_test(
+            "Admin Change User Role (consumer → admin)",
+            "PUT",
+            f"admin/users/{self.user_id}/role",
+            200,
+            data=role_data,
+            use_admin=True
+        )
+        
+        if not success:
+            return False
+            
+        # Change back to consumer
+        role_data = {"role": "consumer"}
+        success2, response2 = self.run_test(
+            "Admin Change User Role (admin → consumer)",
+            "PUT",
+            f"admin/users/{self.user_id}/role",
+            200,
+            data=role_data,
+            use_admin=True
+        )
+        
+        return success and success2
+
+    def test_admin_edit_user_info(self):
+        """Test admin editing user information"""
+        if not self.user_id:
+            print("❌ No regular user ID available for edit test")
+            return False
+            
+        # Update username and email
+        from datetime import datetime
+        timestamp = datetime.now().strftime('%H%M%S')
+        user_data = {
+            "username": f"edited_user_{timestamp}",
+            "email": f"edited_{timestamp}@test.com"
+        }
+        
+        success, response = self.run_test(
+            "Admin Edit User Info",
+            "PUT",
+            f"admin/users/{self.user_id}",
+            200,
+            data=user_data,
+            use_admin=True
+        )
+        
+        if success and 'user' in response:
+            print(f"   Updated username: {response['user']['username']}")
+            print(f"   Updated email: {response['user']['email']}")
+            return True
+        return False
+
+    def test_admin_cannot_delete_self(self):
+        """Test that admin cannot delete their own account"""
+        if not self.admin_user_id:
+            print("❌ No admin user ID available for self-deletion test")
+            return False
+            
+        success, response = self.run_test(
+            "Admin Cannot Delete Self",
+            "DELETE",
+            f"admin/users/{self.admin_user_id}",
+            400,  # Should return 400 Bad Request
+            use_admin=True
+        )
+        
+        if success and 'detail' in response:
+            print(f"   Correctly blocked: {response['detail']}")
+            return True
+        return False
+
+    def test_admin_delete_user(self):
+        """Test admin deleting a user (create a test user first)"""
+        # First create a test user to delete
+        test_user_data = {
+            "username": f"delete_me_{datetime.now().strftime('%H%M%S')}",
+            "email": f"delete_me_{datetime.now().strftime('%H%M%S')}@test.com",
+            "password": "DeleteMe123!",
+            "role": "consumer"
+        }
+        
+        success, response = self.run_test(
+            "Create User for Deletion Test",
+            "POST",
+            "auth/register",
+            201,
+            data=test_user_data
+        )
+        
+        if not success or 'user' not in response:
+            print("❌ Failed to create test user for deletion")
+            return False
+            
+        test_user_id = response['user']['id']
+        print(f"   Created test user with ID: {test_user_id}")
+        
+        # Now delete the user as admin
+        success2, response2 = self.run_test(
+            "Admin Delete User",
+            "DELETE",
+            f"admin/users/{test_user_id}",
+            200,
+            use_admin=True
+        )
+        
+        return success2
+
+    def test_regular_user_orders_only(self):
+        """Test that regular users only see their own orders"""
+        # This test uses the regular user token to ensure they only see their orders
+        success, response = self.run_test(
+            "Regular User Orders (Own Only)",
+            "GET",
+            "orders/",
+            200
+        )
+        
+        if success and 'orders' in response:
+            print(f"   User sees {len(response['orders'])} orders")
+            # Verify all orders belong to the current user
+            for order in response['orders']:
+                if 'user_id' in order and order['user_id'] != self.user_id:
+                    print(f"❌ User seeing order from different user: {order['user_id']}")
+                    return False
+            print("   ✅ All orders belong to current user")
+            return True
+        return False
+
+    def test_admin_sees_all_orders(self):
+        """Test that admin can see all orders"""
+        success, response = self.run_test(
+            "Admin Sees All Orders",
+            "GET",
+            "orders/",
+            200,
+            use_admin=True
+        )
+        
+        if success and 'orders' in response:
+            print(f"   Admin sees {len(response['orders'])} total orders")
+            # Check if orders from different users are visible
+            user_ids = set()
+            for order in response['orders']:
+                if 'user_id' in order:
+                    user_ids.add(order['user_id'])
+            print(f"   Orders from {len(user_ids)} different users")
+            return True
+        return False
+
+    def test_client_login_role_check(self):
+        """Test that regular client login returns consumer role"""
+        client_data = {
+            "email": "teste@exemplo.com",
+            "password": "senha123456"
+        }
+        
+        success, response = self.run_test(
+            "Client Login Role Check",
+            "POST",
+            "auth/login",
+            200,
+            data=client_data
+        )
+        
+        if success and 'user' in response:
+            user_role = response['user']['role']
+            print(f"   Client role: {user_role}")
+            if user_role == "consumer":
+                print("   ✅ Client has correct consumer role")
+                return True
+            else:
+                print(f"   ❌ Expected 'consumer' role, got '{user_role}'")
+                return False
+        return False
+
+    def test_admin_login_role_check(self):
+        """Test that admin login returns admin role"""
+        # This should already be tested in test_admin_login, but let's verify the role specifically
+        if not self.admin_token:
+            print("❌ No admin token available")
+            return False
+            
+        success, response = self.run_test(
+            "Admin Login Role Verification",
+            "GET",
+            "auth/me",
+            200,
+            use_admin=True
+        )
+        
+        if success and 'role' in response:
+            admin_role = response['role']
+            print(f"   Admin role: {admin_role}")
+            if admin_role == "admin":
+                print("   ✅ Admin has correct admin role")
+                return True
+            else:
+                print(f"   ❌ Expected 'admin' role, got '{admin_role}'")
+                return False
+        return False
+
 def main():
     print("🚀 Starting GBSite API Tests...")
     print("=" * 50)
