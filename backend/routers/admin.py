@@ -5,7 +5,7 @@ from typing import List
 import math
 
 from database import get_db
-from models.user import User
+from models.user import User, CartItem
 from models.order import Order
 from schemas.user import UserResponse
 from auth import get_current_admin_user
