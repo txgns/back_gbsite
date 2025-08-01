@@ -44,11 +44,12 @@ const DashboardPage: React.FC = () => {
           setOrders(data.orders || []);
         } catch (error: any) {
           console.error('Error fetching orders:', error);
-          toast({
-            title: 'Erro ao carregar pedidos',
-            description: error.message || 'Não foi possível carregar o histórico de pedidos.',
-            variant: 'destructive',
-          });
+          // Remove toast to prevent errors
+          // toast({
+          //   title: 'Erro ao carregar pedidos',
+          //   description: error.message || 'Não foi possível carregar o histórico de pedidos.',
+          //   variant: 'destructive',
+          // });
         }
       }
     };
@@ -58,10 +59,11 @@ const DashboardPage: React.FC = () => {
   const handleLogout = () => {
     logout();
     navigate('/');
-    toast({
-      title: 'Logout bem-sucedido!',
-      description: 'Você foi desconectado da sua conta.',
-    });
+    // Remove toast to prevent errors  
+    // toast({
+    //   title: 'Logout bem-sucedido!',
+    //   description: 'Você foi desconectado da sua conta.',
+    // });
   };
 
   if (!isAuthenticated || !user) {
