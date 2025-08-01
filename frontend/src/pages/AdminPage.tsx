@@ -237,6 +237,70 @@ const AdminPage: React.FC = () => {
     }
   };
 
+  const deleteUser = async (userId: number, username: string) => {
+    if (!confirm(`Tem certeza que deseja excluir o usuário "${username}"? Esta ação não pode ser desfeita.`)) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/admin/users/${userId}`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (response.ok) {
+        toast({
+          title: 'Usuário excluído',
+          description: 'Usuário foi excluído com sucesso.',
+        });
+        fetchUsers();
+      } else {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || 'Erro ao excluir usuário');
+      }
+    } catch (error: any) {
+      console.error('Error deleting user:', error);
+      toast({
+        title: 'Erro',
+        description: error.message || 'Não foi possível excluir o usuário.',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const editUser = async (userId: number, userData: {username?: string, email?: string}) => {
+    try {
+      const response = await fetch(`/api/admin/users/${userId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(userData),
+      });
+
+      if (response.ok) {
+        toast({
+          title: 'Usuário atualizado',
+          description: 'Informações do usuário foram atualizadas com sucesso.',
+        });
+        fetchUsers();
+      } else {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || 'Erro ao atualizar usuário');
+      }
+    } catch (error: any) {
+      console.error('Error updating user:', error);
+      toast({
+        title: 'Erro',
+        description: error.message || 'Não foi possível atualizar o usuário.',
+        variant: 'destructive',
+      });
+    }
+  };
+
   const updateOrderStatus = async (orderId: number, status: string) => {
     try {
       const response = await fetch(`/api/orders/${orderId}/status`, {
@@ -484,15 +548,40 @@ const AdminPage: React.FC = () => {
                               {new Date(user.created_at).toLocaleDateString('pt-BR')}
                             </td>
                             <td className="p-4">
-                              <select
-                                value={user.role}
-                                onChange={(e) => updateUserRole(user.id, e.target.value)}
-                                className="bg-robotics-black border border-white/20 text-white rounded px-2 py-1 text-sm"
-                                disabled={user.id === user?.id} // Prevent admin from changing their own role
-                              >
-                                <option value="consumer">Cliente</option>
-                                <option value="admin">Administrador</option>
-                              </select>
+                              <div className="flex items-center gap-2">
+                                <select
+                                  value={user.role}
+                                  onChange={(e) => updateUserRole(user.id, e.target.value)}
+                                  className="bg-robotics-black border border-white/20 text-white rounded px-2 py-1 text-sm"
+                                  disabled={user.id === user?.id} // Prevent admin from changing their own role
+                                >
+                                  <option value="consumer">Cliente</option>
+                                  <option value="admin">Administrador</option>
+                                </select>
+                                
+                                <button
+                                  onClick={() => {
+                                    const newUsername = prompt('Novo nome de usuário:', user.username);
+                                    if (newUsername && newUsername !== user.username) {
+                                      editUser(user.id, { username: newUsername });
+                                    }
+                                  }}
+                                  className="p-1 text-blue-400 hover:text-blue-300"
+                                  title="Editar usuário"
+                                >
+                                  <Edit size={16} />
+                                </button>
+                                
+                                {user.id !== user?.id && ( // Prevent admin from deleting themselves
+                                  <button
+                                    onClick={() => deleteUser(user.id, user.username)}
+                                    className="p-1 text-red-400 hover:text-red-300"
+                                    title="Excluir usuário"
+                                  >
+                                    <Trash2 size={16} />
+                                  </button>
+                                )}
+                              </div>
                             </td>
                           </tr>
                         ))
