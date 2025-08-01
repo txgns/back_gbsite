@@ -548,15 +548,40 @@ const AdminPage: React.FC = () => {
                               {new Date(user.created_at).toLocaleDateString('pt-BR')}
                             </td>
                             <td className="p-4">
-                              <select
-                                value={user.role}
-                                onChange={(e) => updateUserRole(user.id, e.target.value)}
-                                className="bg-robotics-black border border-white/20 text-white rounded px-2 py-1 text-sm"
-                                disabled={user.id === user?.id} // Prevent admin from changing their own role
-                              >
-                                <option value="consumer">Cliente</option>
-                                <option value="admin">Administrador</option>
-                              </select>
+                              <div className="flex items-center gap-2">
+                                <select
+                                  value={user.role}
+                                  onChange={(e) => updateUserRole(user.id, e.target.value)}
+                                  className="bg-robotics-black border border-white/20 text-white rounded px-2 py-1 text-sm"
+                                  disabled={user.id === user?.id} // Prevent admin from changing their own role
+                                >
+                                  <option value="consumer">Cliente</option>
+                                  <option value="admin">Administrador</option>
+                                </select>
+                                
+                                <button
+                                  onClick={() => {
+                                    const newUsername = prompt('Novo nome de usuário:', user.username);
+                                    if (newUsername && newUsername !== user.username) {
+                                      editUser(user.id, { username: newUsername });
+                                    }
+                                  }}
+                                  className="p-1 text-blue-400 hover:text-blue-300"
+                                  title="Editar usuário"
+                                >
+                                  <Edit size={16} />
+                                </button>
+                                
+                                {user.id !== user?.id && ( // Prevent admin from deleting themselves
+                                  <button
+                                    onClick={() => deleteUser(user.id, user.username)}
+                                    className="p-1 text-red-400 hover:text-red-300"
+                                    title="Excluir usuário"
+                                  >
+                                    <Trash2 size={16} />
+                                  </button>
+                                )}
+                              </div>
                             </td>
                           </tr>
                         ))
