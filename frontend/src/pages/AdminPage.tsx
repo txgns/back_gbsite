@@ -237,6 +237,70 @@ const AdminPage: React.FC = () => {
     }
   };
 
+  const deleteUser = async (userId: number, username: string) => {
+    if (!confirm(`Tem certeza que deseja excluir o usuário "${username}"? Esta ação não pode ser desfeita.`)) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/admin/users/${userId}`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (response.ok) {
+        toast({
+          title: 'Usuário excluído',
+          description: 'Usuário foi excluído com sucesso.',
+        });
+        fetchUsers();
+      } else {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || 'Erro ao excluir usuário');
+      }
+    } catch (error: any) {
+      console.error('Error deleting user:', error);
+      toast({
+        title: 'Erro',
+        description: error.message || 'Não foi possível excluir o usuário.',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const editUser = async (userId: number, userData: {username?: string, email?: string}) => {
+    try {
+      const response = await fetch(`/api/admin/users/${userId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(userData),
+      });
+
+      if (response.ok) {
+        toast({
+          title: 'Usuário atualizado',
+          description: 'Informações do usuário foram atualizadas com sucesso.',
+        });
+        fetchUsers();
+      } else {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || 'Erro ao atualizar usuário');
+      }
+    } catch (error: any) {
+      console.error('Error updating user:', error);
+      toast({
+        title: 'Erro',
+        description: error.message || 'Não foi possível atualizar o usuário.',
+        variant: 'destructive',
+      });
+    }
+  };
+
   const updateOrderStatus = async (orderId: number, status: string) => {
     try {
       const response = await fetch(`/api/orders/${orderId}/status`, {
