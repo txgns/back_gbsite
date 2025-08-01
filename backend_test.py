@@ -591,19 +591,26 @@ def main():
     # Setup
     tester = GBSiteAPITester("http://127.0.0.1:8001")
     
-    # Test sequence
+    # Test sequence - Updated for new admin functionalities
     tests = [
         ("Health Check", tester.test_health_check),
         ("User Registration", tester.test_register_user),
         ("Get Current User", tester.test_get_current_user),
         ("Admin Login", tester.test_admin_login),
+        ("Admin Login Role Verification", tester.test_admin_login_role_check),
+        ("Client Login Role Check", tester.test_client_login_role_check),
         ("Get Products", tester.test_get_products),
         ("Get Product Categories", tester.test_get_product_categories),
         ("Add to Cart", tester.test_add_to_cart),
         ("Get Cart", tester.test_get_cart),
         ("Create Order", tester.test_create_order),
-        ("Get User Orders", tester.test_get_user_orders),
+        ("Regular User Orders (Own Only)", tester.test_regular_user_orders_only),
+        ("Admin Sees All Orders", tester.test_admin_sees_all_orders),
         ("Admin Get All Users", tester.test_admin_get_all_orders),
+        ("Admin Change User Role", tester.test_admin_change_user_role),
+        ("Admin Edit User Info", tester.test_admin_edit_user_info),
+        ("Admin Cannot Delete Self", tester.test_admin_cannot_delete_self),
+        ("Admin Delete User", tester.test_admin_delete_user),
         ("Admin Create Product", tester.test_admin_create_product),
         ("Admin Get Low Stock", tester.test_admin_get_low_stock),
         ("Admin Get Stats", tester.test_admin_get_stats),
