@@ -457,6 +457,7 @@ class GBSiteAPITester:
     def test_admin_delete_user(self):
         """Test admin deleting a user (create a test user first)"""
         # First create a test user to delete
+        from datetime import datetime
         test_user_data = {
             "username": f"delete_me_{datetime.now().strftime('%H%M%S')}",
             "email": f"delete_me_{datetime.now().strftime('%H%M%S')}@test.com",
